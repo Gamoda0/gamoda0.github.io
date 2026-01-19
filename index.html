@@ -152,7 +152,6 @@
       background: linear-gradient(to bottom, #ff6347, #ff4500);
     }
   </style>
-      <!-- Кнопка должна быть ПОСЛЕ футера -->
     <div class="footer-toggle-wrapper">
       <button id="toggleFooterBtn" class="footer-toggle-btn" title="Скрыть футер">▲</button>
     </div>
@@ -278,7 +277,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275));
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
@@ -317,6 +316,10 @@
             background-image: url('assets/background/2025.webp');
         }
         
+        .year-card[data-year="2026"]::before {
+            background-image: url('assets/background/2026.webp');
+        }
+        
         .year-card.all-card::before {
             background-image: url('assets/img/5i_cryptobody.webp');
         }
@@ -326,6 +329,7 @@
         .year-card:nth-child(3) { animation: cardEntry 0.6s 0.5s forwards; }
         .year-card:nth-child(4) { animation: cardEntry 0.6s 0.6s forwards; }
         .year-card:nth-child(5) { animation: cardEntry 0.6s 0.7s forwards; }
+        .year-card:nth-child(6) { animation: cardEntry 0.6s 0.8s forwards; }
         
         .year-card.all-card {
             background: rgba(255, 126, 51, 0.1);
@@ -635,6 +639,7 @@
             animation: fadeIn 0.8s 1.2s forwards;
             transition: transform 0.3s ease;
             border: 1px solid rgba(255, 140, 0, 0.2);
+            aspect-ratio: 16/9;
         }
         
         .random-moment-container:hover {
@@ -645,8 +650,8 @@
         .random-moment-container img,
         .random-moment-container video {
             width: 100%;
+            height: 100%;
             display: block;
-            max-height: 450px;
             object-fit: cover;
         }
         
@@ -1241,6 +1246,10 @@
                 <div class="particles" id="particles-2025"></div>
                 <div class="year-number">2025</div>
             </div>
+            <div class="year-card" data-year="2026" id="year-2026">
+                <div class="particles" id="particles-2026"></div>
+                <div class="year-number">2026</div>
+            </div>
             <div class="year-card all-card" id="year-all">
                 <div class="particles" id="particles-all"></div>
                 <div class="year-number">ВСЕ</div>
@@ -1248,11 +1257,11 @@
         </div>
         
         <div class="random-moment">
-            <h2 class="random-moment-title">Лучшие моменты</h2>
+            <h2 class="random-moment-title">Яркие моменты</h2>
             <div class="random-moment-container" id="random-moment">
                 <!-- Сюда будет вставлен случайный медиа-файл -->
             </div>
-            <button class="show-all-btn" id="show-all-btn">Показать все моменты</button>
+            <button class="show-all-btn" id="show-all-btn">Показать яркие моменты</button>
         </div>
         
         <div class="all-moments" id="all-moments">
@@ -1315,57 +1324,35 @@
     </div>
 
     <script>
-        // Initialize particles for year cards with emojis
+        // Initialize particles for year cards with emojis - Уменьшено количество частиц
         document.querySelectorAll('.year-card').forEach(card => {
             const particlesContainer = card.querySelector('.particles');
-            const particleCount = 15;
+            const particleCount = 5; // Уменьшено с 15 до 5
             
             const emojis = [
                 'emoji/a_angrycat.webp',
                 'emoji/a_cat.webp',
                 'emoji/a_coolcat.webp',
                 'emoji/a_jolynecat.webp',
-                'emoji/a_jotarocat.webp',
                 'emoji/a_policecat.webp',
                 'emoji/b_catsuperevent.webp',
                 'emoji/buzova.webp',
                 'emoji/c_knuckangrycoffie.webp',
                 'emoji/c_knuckcoffie.webp',
                 'emoji/c_knuckcool.webp',
-                'emoji/c_knuckcry.webp',
                 'emoji/catt.webp',
                 'emoji/chadmedic.webp',
                 'emoji/clueless.webp',
-                'emoji/cmb.webp',
                 'emoji/cool~1.webp',
-                'emoji/crypto_honest_reaction.webp',
                 'emoji/dwayne.webp',
-                'emoji/ftv.webp',
                 'emoji/g_cooldog.webp',
-                'emoji/gachiGASM.webp',
-                'emoji/goblin.webp',
                 'emoji/halflife.webp',
-                'emoji/hl2_skull.webp',
-                'emoji/hunted.webp',
-                'emoji/jojo1.webp',
-                'emoji/jojo2.webp',
                 'emoji/klass.webp',
-                'emoji/klass_ahuenno.webp',
                 'emoji/lambda.webp',
-                'emoji/mda.webp',
                 'emoji/microcop.webp',
-                'emoji/n_flushed.webp',
-                'emoji/n_peep.webp',
-                'emoji/n_think.webp',
-                'emoji/navalny.webp',
-                'emoji/nerd~1.webp',
-                'emoji/nerzhaka.webp',
                 'emoji/oreh.webp',
-                'emoji/pizdec.webp',
-                "emoji/rasmeshill.webp",
                 'emoji/resistance.webp',
                 'emoji/sas.webp',
-                'emoji/sasquatch.webp',
                 'emoji/shephard.webp',
                 'emoji/stahp.webp',
                 'emoji/strong.webp',
@@ -1426,6 +1413,10 @@
             animateAndRedirect(this, '2025.html');
         });
 
+        document.getElementById('year-2026').addEventListener('click', function() {
+            animateAndRedirect(this, '2026.html');
+        });
+
         document.getElementById('year-all').addEventListener('click', function() {
             animateAndRedirect(this, 'all.html');
         });
@@ -1452,47 +1443,25 @@
                 'emoji/a_cat.webp',
                 'emoji/a_coolcat.webp',
                 'emoji/a_jolynecat.webp',
-                'emoji/a_jotarocat.webp',
                 'emoji/a_policecat.webp',
                 'emoji/b_catsuperevent.webp',
                 'emoji/buzova.webp',
                 'emoji/c_knuckangrycoffie.webp',
                 'emoji/c_knuckcoffie.webp',
                 'emoji/c_knuckcool.webp',
-                'emoji/c_knuckcry.webp',
                 'emoji/catt.webp',
                 'emoji/chadmedic.webp',
                 'emoji/clueless.webp',
-                'emoji/cmb.webp',
                 'emoji/cool~1.webp',
-                'emoji/crypto_honest_reaction.webp',
                 'emoji/dwayne.webp',
-                'emoji/ftv.webp',
                 'emoji/g_cooldog.webp',
-                'emoji/gachiGASM.webp',
-                'emoji/goblin.webp',
                 'emoji/halflife.webp',
-                'emoji/hl2_skull.webp',
-                'emoji/hunted.webp',
-                'emoji/jojo1.webp',
-                'emoji/jojo2.webp',
                 'emoji/klass.webp',
-                'emoji/klass_ahuenno.webp',
                 'emoji/lambda.webp',
-                'emoji/mda.webp',
                 'emoji/microcop.webp',
-                'emoji/n_flushed.webp',
-                'emoji/n_peep.webp',
-                'emoji/n_think.webp',
-                'emoji/navalny.webp',
-                'emoji/nerd~1.webp',
-                'emoji/nerzhaka.webp',
                 'emoji/oreh.webp',
-                'emoji/pizdec.webp',
-                "emoji/rasmeshill.webp",
                 'emoji/resistance.webp',
                 'emoji/sas.webp',
-                'emoji/sasquatch.webp',
                 'emoji/shephard.webp',
                 'emoji/stahp.webp',
                 'emoji/strong.webp',
@@ -1690,11 +1659,12 @@
             { type: 'image', url: 'assets/img/21i_he_view.webp', caption: 'He view', tags: ['image', 'cool'] }
         ];
 
-        // Show random moment
+        // Show random moment (only images)
         function showRandomMoment() {
             const randomMoment = document.getElementById('random-moment');
-            const randomIndex = Math.floor(Math.random() * mediaFiles.length);
-            const media = mediaFiles[randomIndex];
+            const imagesOnly = mediaFiles.filter(media => media.type === 'image');
+            const randomIndex = Math.floor(Math.random() * imagesOnly.length);
+            const media = imagesOnly[randomIndex];
             
             randomMoment.innerHTML = '';
             
@@ -1710,29 +1680,19 @@
                 mediaElement.onload = () => {
                     placeholder.remove();
                 };
-            } else {
-                mediaElement = document.createElement('video');
-                mediaElement.muted = true;
-                mediaElement.loop = true;
-                mediaElement.playsInline = true;
-                mediaElement.autoplay = true;
-                mediaElement.onloadeddata = () => {
-                    placeholder.remove();
-                };
+                mediaElement.src = media.url;
+                randomMoment.appendChild(mediaElement);
+                
+                const caption = document.createElement('div');
+                caption.className = 'random-moment-caption';
+                caption.textContent = media.caption;
+                randomMoment.appendChild(caption);
             }
-            
-            mediaElement.src = media.url;
-            randomMoment.appendChild(mediaElement);
-            
-            const caption = document.createElement('div');
-            caption.className = 'random-moment-caption';
-            caption.textContent = media.caption;
-            randomMoment.appendChild(caption);
             
             randomMoment.addEventListener('click', () => openMediaPlayer(media));
         }
 
-        // Load all moments with lazy loading
+        // Load all moments - ВСЁ ГРУЗИТСЯ СРАЗУ КАК И РАНЬШЕ
         function loadAllMoments() {
             const momentsGrid = document.getElementById('moments-grid');
             momentsGrid.innerHTML = '';
@@ -1754,22 +1714,34 @@
                     mediaElement.onload = () => {
                         placeholder.remove();
                     };
+                    mediaElement.src = media.url;
+                    momentItem.appendChild(mediaElement);
                 } else {
+                    // Видео загружается сразу как и раньше
                     mediaElement = document.createElement('video');
                     mediaElement.muted = true;
                     mediaElement.loop = true;
                     mediaElement.playsInline = true;
+                    mediaElement.autoplay = false;
+                    mediaElement.preload = 'metadata';
                     mediaElement.onloadeddata = () => {
                         placeholder.remove();
                     };
                     
+                    // Если видео не загрузилось, все равно убираем плейсхолдер через 3 секунды
+                    setTimeout(() => {
+                        if (placeholder.parentNode) {
+                            placeholder.remove();
+                        }
+                    }, 3000);
+                    
                     const playIcon = document.createElement('div');
                     playIcon.className = 'play-icon';
                     momentItem.appendChild(playIcon);
+                    
+                    mediaElement.src = media.url;
+                    momentItem.appendChild(mediaElement);
                 }
-                
-                mediaElement.src = media.url;
-                momentItem.appendChild(mediaElement);
                 
                 const caption = document.createElement('div');
                 caption.className = 'moment-caption';
@@ -2004,7 +1976,7 @@
               isPlaying = false;
               
               // Сбрасываем состояние звука при закрытии
-              isMuted = false; // Добавьте эту строку
+              isMuted = false;
               currentVideo = null;
             }
             
@@ -2148,40 +2120,19 @@ window.addEventListener('load', function() {
                 'emoji/c_knuckangrycoffie.webp',
                 'emoji/c_knuckcoffie.webp',
                 'emoji/c_knuckcool.webp',
-                'emoji/c_knuckcry.webp',
                 'emoji/catt.webp',
                 'emoji/chadmedic.webp',
                 'emoji/clueless.webp',
-                'emoji/cmb.webp',
                 'emoji/cool~1.webp',
-                'emoji/crypto_honest_reaction.webp',
                 'emoji/dwayne.webp',
-                'emoji/ftv.webp',
                 'emoji/g_cooldog.webp',
-                'emoji/gachiGASM.webp',
-                'emoji/goblin.webp',
                 'emoji/halflife.webp',
-                'emoji/hl2_skull.webp',
-                'emoji/hunted.webp',
-                'emoji/jojo1.webp',
-                'emoji/jojo2.webp',
                 'emoji/klass.webp',
-                'emoji/klass_ahuenno.webp',
                 'emoji/lambda.webp',
-                'emoji/mda.webp',
                 'emoji/microcop.webp',
-                'emoji/n_flushed.webp',
-                'emoji/n_peep.webp',
-                'emoji/n_think.webp',
-                'emoji/navalny.webp',
-                'emoji/nerd~1.webp',
-                'emoji/nerzhaka.webp',
                 'emoji/oreh.webp',
-                'emoji/pizdec.webp',
-                "emoji/rasmeshill.webp",
                 'emoji/resistance.webp',
                 'emoji/sas.webp',
-                'emoji/sasquatch.webp',
                 'emoji/shephard.webp',
                 'emoji/stahp.webp',
                 'emoji/strong.webp',
