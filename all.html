@@ -419,6 +419,7 @@
                     <button class="year-btn" data-year="2023">2023</button>
                     <button class="year-btn" data-year="2024">2024</button>
                     <button class="year-btn" data-year="2025">2025</button>
+                    <button class="year-btn" data-year="2026">2026</button>
                 </div>
                 
                 <div class="status-filter">
@@ -437,7 +438,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Конфигурация - какие года загружать
-            const yearsToLoad = ['2022', '2023', '2024', '2025'];
+            const yearsToLoad = ['2022', '2023', '2024', '2025', '2026'];
             let allStreams = []; // Все загруженные стримы
             let currentFilter = 'all'; // Текущий фильтр по статусу
             let currentYearFilter = 'all'; // Текущий фильтр по году
@@ -1155,7 +1156,12 @@
             #85 https://www.youtube.com/watch?v=e8ZBNHaumzk 28.12.2025 ✅ [СТРИМ] НЕУЖЕЛИ НАСТАЛО ТО САМОЕ ВРЕМЯ?
             #86 https://www.youtube.com/watch?v=M9JFd1dLdPE 29.12.2025 ✅ [СТРИМ] ГОСТЬ GOTOLATE
             #87 https://www.youtube.com/watch?v=GfXUOsDnYAE 31.12.2025 ✅ [СТРИМ] НОВОГОДНИЙ (УПРОЩЕННЫЙ ПРОСТОЙ)(ОБЫЧНЫЙ)(ЛЕГКИЙ)(ПРАЗДНИЧНЫЙ НО БЕЗ ИЗЛИШЕСТВ) ЭФИР
-                    `
+                    `,
+                    '2026': `
+            #1 https://www.youtube.com/watch?v=Iton9k9aSWs 10.01.2026 ✅ [СТРИМ] МОЙ ПЕРВЫЙ СТРИМ
+            #2 https://www.youtube.com/watch?v=FnXdHEH2wl8 11.01.2026 ✅ [СТРИМ] БЛИН ЭТА ОПЯТЬ ГАПИ ПОТТЕПР?
+            #3 https://www.youtube.com/watch?v=-F3PBGNyHvU 18.01.2026 ✅ [СТРИМ] КОНСУЛЬТАНТ ПО ИГРАМ PS2 ХОЧЕТ ЧЕТА СКАЗАТЬ! (БУДЕТ ГАРРИ ПОТТЕР(
+            `
                 };
                 
                 return demoData[year] || '';
@@ -1164,12 +1170,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
