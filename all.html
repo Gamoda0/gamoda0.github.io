@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link id="favicon" rel="icon" type="image/webp" href="emoji/emoji46.webp">
     <style>
         :root {
             --primary: #ff4500;
@@ -142,7 +143,7 @@
             flex-wrap: wrap;
         }
         
-        .filter-btn {
+        .filter-btn, .year-btn {
             padding: 0.5rem 1rem;
             border-radius: 20px;
             border: none;
@@ -156,7 +157,7 @@
             overflow: hidden;
         }
         
-        .filter-btn::before {
+        .filter-btn::before, .year-btn::before {
             content: '';
             position: absolute;
             top: 0;
@@ -172,15 +173,15 @@
             transition: all 0.5s ease;
         }
         
-        .filter-btn:hover::before {
+        .filter-btn:hover::before, .year-btn:hover::before {
             left: 100%;
         }
         
-        .filter-btn:hover {
+        .filter-btn:hover, .year-btn:hover {
             background: rgba(255, 255, 255, 0.2);
         }
         
-        .filter-btn.active {
+        .filter-btn.active, .year-btn.active {
             background: linear-gradient(to right, var(--primary), var(--secondary));
             font-weight: 600;
         }
@@ -363,17 +364,56 @@
             pointer-events: none;
             will-change: transform;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        /* Стили для счетчиков на кнопках фильтров */
+        .filter-btn, .year-btn {
+            position: relative;
+            padding-top: 28px;
         }
-        
-        @keyframes cardEntry {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .filter-count, .year-count {
+            position: absolute;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 700;
+            z-index: 10;
+            min-width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            padding: 0 8px;
+            white-space: nowrap;
+            transition: all 0.3s;
         }
-        
+
+        .filter-btn[data-filter="all"] .filter-count {
+            background: var(--all-color);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(255, 126, 51, 0.5);
+        }
+
+        .filter-btn[data-filter="available"] .filter-count {
+            background: var(--success);
+            color: #003311;
+            box-shadow: 0 0 10px rgba(77, 255, 122, 0.5);
+        }
+
+        .filter-btn[data-filter="unavailable"] .filter-count {
+            background: var(--error);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+        }
+
+        .year-count {
+            background: var(--secondary);
+            color: var(--darker);
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.5);
+        }
+
         @media (max-width: 768px) {
             .streams-grid {
                 grid-template-columns: 1fr;
@@ -390,6 +430,27 @@
             .search-container {
                 min-width: 100%;
             }
+
+            .filter-count, .year-count {
+                font-size: 12px;
+                min-width: 20px;
+                height: 20px;
+                border-radius: 10px;
+            }
+
+            .filter-btn, .year-btn {
+                padding-top: 24px;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes cardEntry {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -447,105 +508,55 @@
             // Инициализация падающих смайликов
             const emojiContainer = document.getElementById('emoji-container');
             const activeEmojis = [];
+            let emojiInterval = null;
             let lastAnimationFrame = null;
-            
-            // Список смайликов
-            const emojis = [
-                'emoji/a_angrycat.webp',
-                'emoji/a_cat.webp',
-                'emoji/a_coolcat.webp',
-                'emoji/a_jolynecat.webp',
-                'emoji/a_jotarocat.webp',
-                'emoji/a_policecat.webp',
-                'emoji/b_catsuperevent.webp',
-                'emoji/buzova.webp',
-                'emoji/c_knuckangrycoffie.webp',
-                'emoji/c_knuckcoffie.webp',
-                'emoji/c_knuckcool.webp',
-                'emoji/c_knuckcry.webp',
-                'emoji/catt.webp',
-                'emoji/chadmedic.webp',
-                'emoji/clueless.webp',
-                'emoji/cmb.webp',
-                'emoji/cool~1.webp',
-                'emoji/crypto_honest_reaction.webp',
-                'emoji/dwayne.webp',
-                'emoji/ftv.webp',
-                'emoji/g_cooldog.webp',
-                'emoji/gachiGASM.webp',
-                'emoji/goblin.webp',
-                'emoji/halflife.webp',
-                'emoji/hl2_skull.webp',
-                'emoji/hunted.webp',
-                'emoji/jojo1.webp',
-                'emoji/jojo2.webp',
-                'emoji/klass.webp',
-                'emoji/klass_ahuenno.webp',
-                'emoji/lambda.webp',
-                'emoji/mda.webp',
-                'emoji/microcop.webp',
-                'emoji/n_flushed.webp',
-                'emoji/n_peep.webp',
-                'emoji/n_think.webp',
-                'emoji/navalny.webp',
-                'emoji/nerd~1.webp',
-                'emoji/nerzhaka.webp',
-                'emoji/oreh.webp',
-                'emoji/pizdec.webp',
-                "emoji/rasmeshill.webp",
-                'emoji/resistance.webp',
-                'emoji/sas.webp',
-                'emoji/sasquatch.webp',
-                'emoji/shephard.webp',
-                'emoji/stahp.webp',
-                'emoji/strong.webp',
-                'emoji/thinking~1.webp',
-                'emoji/yareyare.webp'
-            ];
+
+            // Смена фавиконки каждые 10 секунд
+            let faviconInterval = null;
+            function startFaviconCycle() {
+                if (faviconInterval) clearInterval(faviconInterval);
+                let emojiIndex = 0;
+                const updateFavicon = () => {
+                    const favicon = document.getElementById('favicon');
+                    favicon.href = getRandomEmoji();
+                    emojiIndex = (emojiIndex + 1) % 50;
+                };
+                updateFavicon();
+                faviconInterval = setInterval(updateFavicon, 10000);
+            }
+
+            // Получение случайного эмодзи
+            function getRandomEmoji() {
+                return `emoji/emoji${Math.floor(Math.random() * 50)}.webp`;
+            }
             
             // Функция создания падающего смайлика
             function createFallingEmoji() {
+                if (document.hidden) return;
+                
                 const emoji = document.createElement('div');
                 emoji.className = 'falling-emoji';
-                
-                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-                emoji.style.backgroundImage = `url('${randomEmoji}')`;
-                
-                const posX = Math.random() * window.innerWidth;
-                emoji.style.left = `${posX}px`;
+                emoji.style.backgroundImage = `url('${getRandomEmoji()}')`;
+                emoji.style.left = `${Math.random() * window.innerWidth}px`;
                 emoji.style.top = '-30px';
-                
-                const rotation = -30 + Math.random() * 60;
-                emoji.style.transform = `rotate(${rotation}deg)`;
-                
+                emoji.style.transform = `rotate(${-30 + Math.random() * 60}deg)`;
                 const size = 20 + Math.random() * 20;
                 emoji.style.width = `${size}px`;
                 emoji.style.height = `${size}px`;
-                
-                const speed = 0.5 + Math.random() * 2.5;
-                
                 emojiContainer.appendChild(emoji);
                 
                 const emojiData = {
                     element: emoji,
-                    speed: speed,
+                    speed: 0.5 + Math.random() * 2.5,
                     position: -30,
-                    rotation: rotation,
+                    rotation: -30 + Math.random() * 60,
                     rotationSpeed: (Math.random() - 0.5) * 10,
                     removed: false
                 };
-                
                 activeEmojis.push(emojiData);
                 
-                if (!lastAnimationFrame) {
-                    animateEmojis();
-                }
-                
-                setTimeout(() => {
-                    if (!emojiData.removed) {
-                        removeEmoji(emojiData);
-                    }
-                }, 10000);
+                if (!lastAnimationFrame) animateEmojis();
+                setTimeout(() => { if (!emojiData.removed) removeEmoji(emojiData); }, 10000);
             }
             
             // Анимация падающих смайликов
@@ -617,14 +628,124 @@
             }
             
             // Запуск системы падающих смайликов
-            setInterval(createFallingEmoji, 700 + Math.random() * 300);
-            
-            // Первоначальный выброс смайликов
-            setTimeout(() => {
-                for (let i = 0; i < 5; i++) {
-                    setTimeout(createFallingEmoji, i * 200);
+            function startEmojiSystem() {
+                if (emojiInterval) clearInterval(emojiInterval);
+                emojiInterval = setInterval(createFallingEmoji, 700 + Math.random() * 300);
+                
+                activeEmojis.forEach(emoji => removeEmoji(emoji));
+                activeEmojis.length = 0;
+                
+                setTimeout(() => { 
+                    for (let i = 0; i < 5; i++) setTimeout(createFallingEmoji, i * 200); 
+                }, 1000);
+            }
+
+            // Обработка изменения видимости страницы
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    if (emojiInterval) clearInterval(emojiInterval);
+                    emojiInterval = null;
+                    if (lastAnimationFrame) {
+                        cancelAnimationFrame(lastAnimationFrame);
+                        lastAnimationFrame = null;
+                    }
+                } else {
+                    startEmojiSystem();
                 }
-            }, 1000);
+            });
+            
+            startEmojiSystem();
+            startFaviconCycle();
+            
+            // Функции для счетчиков
+            function countFilteredStreams(filteredStreams = allStreams) {
+                const available = filteredStreams.filter(s => s.status === 'available').length;
+                const unavailable = filteredStreams.filter(s => s.status === 'unavailable').length;
+                const all = filteredStreams.length;
+                return { available, unavailable, all };
+            }
+
+            function countStreamsByYear() {
+                const counts = {};
+                yearsToLoad.forEach(year => {
+                    counts[year] = allStreams.filter(s => s.year === year).length;
+                });
+                counts['all'] = allStreams.length;
+                return counts;
+            }
+
+            function updateCounters() {
+                // Получаем отфильтрованные стримы для текущих фильтров (год и поиск)
+                const filteredStreams = allStreams.filter(stream => {
+                    // Фильтр по году
+                    const yearMatch = currentYearFilter === 'all' || stream.year === currentYearFilter;
+                    
+                    // Поиск
+                    const searchMatch = !currentSearch || 
+                        stream.title.toLowerCase().includes(currentSearch) || 
+                        stream.number.includes(currentSearch) || 
+                        stream.date.includes(currentSearch) ||
+                        stream.year.includes(currentSearch);
+                    
+                    return yearMatch && searchMatch;
+                });
+
+                const counts = countFilteredStreams(filteredStreams);
+                const yearCounts = countStreamsByYear();
+                
+                // Обновляем счетчики статусов - они должны показывать количество для текущих фильтров
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    const countEl = btn.querySelector('.filter-count');
+                    if (countEl) {
+                        const type = btn.dataset.filter;
+                        if (type === 'all') countEl.textContent = counts.all;
+                        else if (type === 'available') countEl.textContent = counts.available;
+                        else if (type === 'unavailable') countEl.textContent = counts.unavailable;
+                    }
+                });
+
+                // Обновляем счетчики годов - они должны показывать общее количество для каждого года
+                // независимо от текущего фильтра
+                document.querySelectorAll('.year-btn').forEach(btn => {
+                    const countEl = btn.querySelector('.year-count');
+                    if (countEl) {
+                        const year = btn.dataset.year;
+                        countEl.textContent = yearCounts[year] || 0;
+                    }
+                });
+            }
+
+            function addCountersToFilters() {
+                const counts = countFilteredStreams();
+                const yearCounts = countStreamsByYear();
+                
+                // Добавляем счетчики на кнопки статусов
+                const filterButtons = document.querySelectorAll('.filter-btn');
+                filterButtons.forEach(btn => {
+                    let count = 0;
+                    const type = btn.dataset.filter;
+                    if (type === 'all') count = counts.all;
+                    else if (type === 'available') count = counts.available;
+                    else if (type === 'unavailable') count = counts.unavailable;
+                    
+                    const countEl = document.createElement('div');
+                    countEl.className = 'filter-count';
+                    countEl.textContent = count;
+                    btn.appendChild(countEl);
+                });
+
+                // Добавляем счетчики на кнопки годов
+                const yearButtons = document.querySelectorAll('.year-btn');
+                yearButtons.forEach(btn => {
+                    const year = btn.dataset.year;
+                    const count = yearCounts[year] || 0;
+                    
+                    const countEl = document.createElement('div');
+                    countEl.className = 'year-count';
+                    countEl.textContent = count;
+                    btn.appendChild(countEl);
+                });
+            }
             
             // Инициализация интерфейса
             initSearch();
@@ -661,6 +782,8 @@
                                     return dateB - dateA;
                                 });
                                 
+                                // Добавляем счетчики
+                                addCountersToFilters();
                                 renderStreams();
                             }
                         })
@@ -673,6 +796,7 @@
                                     streamsContainer.innerHTML = 
                                         '<div class="error">Не удалось загрузить данные о стримах</div>';
                                 } else {
+                                    addCountersToFilters();
                                     renderStreams();
                                 }
                             }
@@ -761,6 +885,9 @@
                     
                     return statusMatch && yearMatch && searchMatch;
                 });
+                
+                // Обновляем счетчики
+                updateCounters();
                 
                 // Если нет результатов
                 if (filteredStreams.length === 0) {
@@ -857,7 +984,7 @@
                 #11 https://www.youtube.com/watch?v=byqeIHMZ_9Y 12.06.2022 ❌ ПЕРЕВОД PC GAME SHOW и BLACK MESA ULRA HIGH
                 #12 https://www.youtube.com/watch?v=Dja_w5SeJdw 13.06.2022 ❌ ПЕРЕВОД PC GAMING SHOW ЖДЁМ ПОКА В BLACK MESA
                 #13 https://www.youtube.com/watch?v=DXVgPWOusnw 06.08.2022 ❌ СТРИМ - СМОТРИМ СТРАШНЫЕ ВИДОСИКИ
-                #14 https://www.youtube.com/watch?v=thiDbNJmepc 07.08.2022 ❌ СТРИМ - СМОТРИМ очень СТРАШНЫЕ ВИДОСИКИ
+                #14 https://www.youtube.com/watch?v=thiDbNJmepc 07.08.2022 ❌ СТРИМ - СМОТРИМ очень СТРАШНЫЕ ВИДЕО
                 #15 https://www.youtube.com/watch?v=qEXAD5oVQhQ 13.08.2022 ❌ СТРИМ - СНОВА ПРИЗРАКИ
                 #16 https://www.youtube.com/watch?v=9exR4WN_vAU 14.08.2022 ❌ СТРИМ - САМЫЕ СТРАШНЫЕ ВИДЕО ИНТЕРНЕТА
                 #17 https://www.youtube.com/watch?v=a3ad7Iwjl4Y 20.08.2022 ❌ СТРИМ - СМОТРИМ ПРИЯТНЫЕ ВИДЕО
