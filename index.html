@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link id="favicon" rel="icon" type="image/webp" href="emoji/stahp.webp">
+  <link id="favicon" rel="icon" type="image/webp" href="emoji/emoji46.webp">
   <style>
     * {
       margin: 0;
@@ -131,7 +131,6 @@
       display: none;
     }
 
-    /* Custom scrollbar */
     ::-webkit-scrollbar {
       width: 12px;
       height: 12px;
@@ -152,9 +151,6 @@
       background: linear-gradient(to bottom, #ff6347, #ff4500);
     }
   </style>
-    <div class="footer-toggle-wrapper">
-      <button id="toggleFooterBtn" class="footer-toggle-btn" title="Скрыть футер">▲</button>
-    </div>
 </head>
 <body>
 
@@ -173,7 +169,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Archive | Главная</title>
+    <title>Архив стримов | Главная</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
@@ -186,6 +182,8 @@
             --darker: #0a0a0a;
             --text: rgba(255, 255, 255, 0.9);
             --all-color: #ff7e33;
+            --error: #ff4d4d;
+            --success: #4dff7a;
         }
         
         * {
@@ -210,7 +208,7 @@
             padding: 2rem;
             position: relative;
             z-index: 2;
-            padding-bottom: 120px; /* Space for footer */
+            padding-bottom: 120px;
         }
         
         header {
@@ -383,6 +381,71 @@
             transform: scaleX(1);
         }
         
+        .year-counters {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .year-card:hover .year-counters {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .counter {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 6px 10px;
+            border-radius: 10px;
+            backdrop-filter: blur(4px);
+            min-width: 50px;
+        }
+        
+        .counter-number {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .counter-label {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        
+        .counter.total .counter-number {
+            background: var(--all-color);
+            color: #fff;
+        }
+        
+        .counter.available .counter-number {
+            background: var(--success);
+            color: #003311;
+        }
+        
+        .counter.unavailable .counter-number {
+            background: var(--error);
+            color: #fff;
+        }
+        
         .particles {
             position: absolute;
             top: 0;
@@ -411,7 +474,7 @@
             height: 100%;
             overflow: hidden;
             pointer-events: none;
-            z-index: 10;
+            z-index: 1;
         }
         
         .falling-emoji {
@@ -432,9 +495,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(10px);
-            z-index: 100;
+            z-index: 1000;
             display: none;
             align-items: center;
             justify-content: center;
@@ -447,13 +510,13 @@
         }
         
         .media-player-container {
-            width: 80%;
-            max-width: 900px;
+            width: 85%;
+            max-width: 1000px;
             background: linear-gradient(145deg, #1e1e1e, #252525);
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
-            transform: scale(0.9);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            transform: scale(0.95);
             transition: transform 0.3s ease;
             position: relative;
             cursor: default;
@@ -478,24 +541,27 @@
             width: 100%;
             position: relative;
             cursor: pointer;
+            background: #000;
         }
         
         .media-player video {
             width: 100%;
             display: block;
-            max-height: 80vh;
+            max-height: 70vh;
+            background: #000;
         }
         
         .media-player img {
             width: 100%;
-            max-height: 80vh;
+            max-height: 70vh;
             object-fit: contain;
             display: block;
+            background: #000;
         }
         
         .media-controls {
-            padding: 1rem;
-            background: rgba(20, 20, 20, 0.9);
+            padding: 1rem 1.5rem;
+            background: rgba(20, 20, 20, 0.95);
             display: flex;
             align-items: center;
             gap: 1rem;
@@ -517,6 +583,7 @@
             align-items: center;
             justify-content: center;
             background: rgba(255, 140, 0, 0.2);
+            min-width: 40px;
         }
         
         .media-controls button:hover {
@@ -527,10 +594,11 @@
         .progress-container {
             flex-grow: 1;
             height: 6px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 3px;
             cursor: pointer;
             position: relative;
+            overflow: hidden;
         }
         
         .progress-bar {
@@ -539,13 +607,33 @@
             border-radius: 3px;
             width: 0%;
             position: relative;
+            transition: width 0.1s linear;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .progress-container:hover .progress-bar::after {
+            opacity: 1;
         }
         
         .time-display {
             font-size: 0.9rem;
             color: rgba(255, 255, 255, 0.7);
-            min-width: 100px;
+            min-width: 120px;
             text-align: center;
+            font-family: monospace;
         }
         
         .volume-control {
@@ -558,10 +646,11 @@
         .volume-slider {
             flex-grow: 1;
             height: 4px;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 2px;
             cursor: pointer;
             position: relative;
+            overflow: hidden;
         }
         
         .volume-level {
@@ -569,13 +658,14 @@
             background: white;
             border-radius: 2px;
             width: 100%;
+            transition: width 0.1s ease;
         }
         
         .close-player {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: rgba(0, 0, 0, 0.5);
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
             border: none;
             color: white;
             width: 40px;
@@ -588,11 +678,12 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
         }
         
         .close-player:hover {
             background: var(--primary);
-            transform: rotate(90deg);
+            transform: rotate(90deg) scale(1.1);
         }
         
         .random-moment {
@@ -640,6 +731,7 @@
             transition: transform 0.3s ease;
             border: 1px solid rgba(255, 140, 0, 0.2);
             aspect-ratio: 16/9;
+            background: #000;
         }
         
         .random-moment-container:hover {
@@ -664,7 +756,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
             padding: 1.5rem;
             color: white;
             font-size: 1.1rem;
@@ -981,7 +1073,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Footer styles */
         .footer {
             position: fixed;
             bottom: 0;
@@ -1043,7 +1134,6 @@
             object-fit: cover;
         }
 
-        /* Стили для кнопки */
         .footer-toggle-wrapper {
           position: fixed;
           right: 30px;
@@ -1073,17 +1163,14 @@
           box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
-        /* Анимация футера */
         .footer {
           transition: transform 0.4s ease;
         }
 
-        /* Состояние скрытого футера */
         .footer-hidden {
           transform: translateY(100%);
         }
 
-        /* Позиция кнопки когда футер виден */
         .footer:not(.footer-hidden) + .footer-toggle-wrapper {
           bottom: calc(100% + 15px);
         }
@@ -1150,19 +1237,25 @@
                 width: 40px;
                 height: 40px;
             }
-
-            .youtube-cutters {
-                right: -120px;
-                max-width: 150px;
+            
+            .year-counters {
+                gap: 8px;
+                bottom: 8px;
             }
-
-            .youtube-cutters.left {
-                left: -120px;
+            
+            .counter {
+                padding: 4px 8px;
+                min-width: 40px;
             }
-
-            .cutter-icon {
-                width: 25px;
-                height: 25px;
+            
+            .counter-number {
+                width: 22px;
+                height: 22px;
+                font-size: 11px;
+            }
+            
+            .counter-label {
+                font-size: 9px;
             }
         }
         
@@ -1213,10 +1306,6 @@
                 width: 35px;
                 height: 35px;
             }
-
-            .youtube-cutters {
-                display: none;
-            }
         }
     </style>
 </head>
@@ -1225,7 +1314,7 @@
     
     <div class="container">
         <header>
-            <h1>Архив стримов</h1>
+            <h1>Архив стримов CRYPTO</h1>
             <p class="subtitle">Выберите год для просмотра доступных записей</p>
         </header>
         
@@ -1233,33 +1322,116 @@
             <div class="year-card" data-year="2022" id="year-2022">
                 <div class="particles" id="particles-2022"></div>
                 <div class="year-number">2022</div>
+                <div class="year-counters">
+                    <div class="counter total" title="Всего стримов">
+                        <div class="counter-number">40</div>
+                        <div class="counter-label">Всего</div>
+                    </div>
+                    <div class="counter available" title="Доступных">
+                        <div class="counter-number">0</div>
+                        <div class="counter-label">Доступно</div>
+                    </div>
+                    <div class="counter unavailable" title="Недоступных">
+                        <div class="counter-number">40</div>
+                        <div class="counter-label">Недоступно</div>
+                    </div>
+                </div>
             </div>
             <div class="year-card" data-year="2023" id="year-2023">
                 <div class="particles" id="particles-2023"></div>
                 <div class="year-number">2023</div>
+                <div class="year-counters">
+                    <div class="counter total" title="Всего стримов">
+                        <div class="counter-number">84</div>
+                        <div class="counter-label">Всего</div>
+                    </div>
+                    <div class="counter available" title="Доступных">
+                        <div class="counter-number">0</div>
+                        <div class="counter-label">Доступно</div>
+                    </div>
+                    <div class="counter unavailable" title="Недоступных">
+                        <div class="counter-number">84</div>
+                        <div class="counter-label">Недоступно</div>
+                    </div>
+                </div>
             </div>
             <div class="year-card" data-year="2024" id="year-2024">
                 <div class="particles" id="particles-2024"></div>
                 <div class="year-number">2024</div>
+                <div class="year-counters">
+                    <div class="counter total" title="Всего стримов">
+                        <div class="counter-number">95</div>
+                        <div class="counter-label">Всего</div>
+                    </div>
+                    <div class="counter available" title="Доступных">
+                        <div class="counter-number">2</div>
+                        <div class="counter-label">Доступно</div>
+                    </div>
+                    <div class="counter unavailable" title="Недоступных">
+                        <div class="counter-number">93</div>
+                        <div class="counter-label">Недоступно</div>
+                    </div>
+                </div>
             </div>
             <div class="year-card" data-year="2025" id="year-2025">
                 <div class="particles" id="particles-2025"></div>
                 <div class="year-number">2025</div>
+                <div class="year-counters">
+                    <div class="counter total" title="Всего стримов">
+                        <div class="counter-number">87</div>
+                        <div class="counter-label">Всего</div>
+                    </div>
+                    <div class="counter available" title="Доступных">
+                        <div class="counter-number">39</div>
+                        <div class="counter-label">Доступно</div>
+                    </div>
+                    <div class="counter unavailable" title="Недоступных">
+                        <div class="counter-number">48</div>
+                        <div class="counter-label">Недоступно</div>
+                    </div>
+                </div>
             </div>
             <div class="year-card" data-year="2026" id="year-2026">
                 <div class="particles" id="particles-2026"></div>
                 <div class="year-number">2026</div>
+                <div class="year-counters">
+                    <div class="counter total" title="Всего стримов">
+                        <div class="counter-number">3</div>
+                        <div class="counter-label">Всего</div>
+                    </div>
+                    <div class="counter available" title="Доступных">
+                        <div class="counter-number">3</div>
+                        <div class="counter-label">Доступно</div>
+                    </div>
+                    <div class="counter unavailable" title="Недоступных">
+                        <div class="counter-number">0</div>
+                        <div class="counter-label">Недоступно</div>
+                    </div>
+                </div>
             </div>
             <div class="year-card all-card" id="year-all">
                 <div class="particles" id="particles-all"></div>
                 <div class="year-number">ВСЕ</div>
+                <div class="year-counters">
+                    <div class="counter total" title="Всего стримов">
+                        <div class="counter-number">309</div>
+                        <div class="counter-label">Всего</div>
+                    </div>
+                    <div class="counter available" title="Доступных">
+                        <div class="counter-number">44</div>
+                        <div class="counter-label">Доступно</div>
+                    </div>
+                    <div class="counter unavailable" title="Недоступных">
+                        <div class="counter-number">265</div>
+                        <div class="counter-label">Недоступно</div>
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="random-moment">
             <h2 class="random-moment-title">Яркие моменты</h2>
             <div class="random-moment-container" id="random-moment">
-                <!-- Сюда будет вставлен случайный медиа-файл -->
             </div>
             <button class="show-all-btn" id="show-all-btn">Показать яркие моменты</button>
         </div>
@@ -1272,28 +1444,23 @@
                 <button class="category-btn" data-category="video">Видео</button>
             </div>
             <div class="moments-grid" id="moments-grid">
-                <!-- Сюда будет вставлена вся галерея -->
             </div>
             <button class="back-to-random" id="back-to-random">Вернуться</button>
         </div>
     </div>
     
-    <!-- Footer with social links -->
     <div class="footer">
         <div class="social-container">
-            <!-- Telegram -->
             <a href="https://t.me/CryptoHLX" class="social-icon" target="_blank">
                 <img src="assets/avatars/telegram.webp" class="platform-icon" alt="Telegram">
                 <img src="assets/avatars/telegram_avatar.webp" class="avatar-overlay" alt="Avatar">
             </a>
             
-            <!-- YouTube -->
             <a href="https://www.youtube.com/@crypto2102" class="social-icon" target="_blank">
                 <img src="assets/avatars/youtube.webp" class="platform-icon" alt="YouTube">
                 <img src="assets/avatars/youtube_avatar.webp" class="avatar-overlay" alt="Avatar">
             </a>
             
-            <!-- Discord -->
             <a href="https://discord.gg/HgDNU5rBZE" class="social-icon" target="_blank">
                 <img src="assets/avatars/discord.webp" class="platform-icon" alt="Discord">
                 <img src="assets/avatars/discord_avatar.png" class="avatar-overlay" alt="Avatar">
@@ -1301,14 +1468,13 @@
         </div>
     </div>
     
-    <!-- Медиа-плеер -->
     <div class="media-player-overlay" id="media-player-overlay">
         <div class="media-player-container">
             <button class="close-player" id="close-player">&times;</button>
             <div class="media-player" id="media-player">
-                <!-- Сюда будет вставлен выбранный медиа-файл -->
             </div>
             <div class="media-controls" id="media-controls">
+                <button id="play-btn">▶</button>
                 <div class="progress-container" id="progress-container">
                     <div class="progress-bar" id="progress-bar"></div>
                 </div>
@@ -1324,41 +1490,9 @@
     </div>
 
     <script>
-        // Initialize particles for year cards with emojis - Уменьшено количество частиц
         document.querySelectorAll('.year-card').forEach(card => {
             const particlesContainer = card.querySelector('.particles');
-            const particleCount = 5; // Уменьшено с 15 до 5
-            
-            const emojis = [
-                'emoji/a_angrycat.webp',
-                'emoji/a_cat.webp',
-                'emoji/a_coolcat.webp',
-                'emoji/a_jolynecat.webp',
-                'emoji/a_policecat.webp',
-                'emoji/b_catsuperevent.webp',
-                'emoji/buzova.webp',
-                'emoji/c_knuckangrycoffie.webp',
-                'emoji/c_knuckcoffie.webp',
-                'emoji/c_knuckcool.webp',
-                'emoji/catt.webp',
-                'emoji/chadmedic.webp',
-                'emoji/clueless.webp',
-                'emoji/cool~1.webp',
-                'emoji/dwayne.webp',
-                'emoji/g_cooldog.webp',
-                'emoji/halflife.webp',
-                'emoji/klass.webp',
-                'emoji/lambda.webp',
-                'emoji/microcop.webp',
-                'emoji/oreh.webp',
-                'emoji/resistance.webp',
-                'emoji/sas.webp',
-                'emoji/shephard.webp',
-                'emoji/stahp.webp',
-                'emoji/strong.webp',
-                'emoji/thinking~1.webp',
-                'emoji/yareyare.webp'
-            ];
+            const particleCount = 5;
             
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
@@ -1370,9 +1504,9 @@
                 const delay = Math.random() * 3;
                 const duration = Math.random() * 10 + 5;
                 const opacity = Math.random() * 0.2 + 0.4;
-                const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+                const emojiNum = Math.floor(Math.random() * 50);
                 
-                particle.style.backgroundImage = `url('${emoji}')`;
+                particle.style.backgroundImage = `url('emoji/emoji${emojiNum}.webp')`;
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
                 particle.style.left = `${posX}%`;
@@ -1396,7 +1530,6 @@
             document.head.appendChild(style);
         });
 
-        // Year card click handlers
         document.getElementById('year-2022').addEventListener('click', function() {
             animateAndRedirect(this, '2022.html');
         });
@@ -1429,48 +1562,22 @@
             }, 200);
         }
 
-        // Falling emojis animation
         const emojiContainer = document.getElementById('emoji-container');
         const activeEmojis = [];
+        let emojiInterval = null;
         let lastAnimationFrame = null;
 
+        function getRandomEmoji() {
+            const emojiNum = Math.floor(Math.random() * 50);
+            return `emoji/emoji${emojiNum}.webp`;
+        }
+
         function createFallingEmoji() {
+            if (document.hidden) return;
+            
             const emoji = document.createElement('div');
             emoji.className = 'falling-emoji';
-            
-            const emojis = [
-                'emoji/a_angrycat.webp',
-                'emoji/a_cat.webp',
-                'emoji/a_coolcat.webp',
-                'emoji/a_jolynecat.webp',
-                'emoji/a_policecat.webp',
-                'emoji/b_catsuperevent.webp',
-                'emoji/buzova.webp',
-                'emoji/c_knuckangrycoffie.webp',
-                'emoji/c_knuckcoffie.webp',
-                'emoji/c_knuckcool.webp',
-                'emoji/catt.webp',
-                'emoji/chadmedic.webp',
-                'emoji/clueless.webp',
-                'emoji/cool~1.webp',
-                'emoji/dwayne.webp',
-                'emoji/g_cooldog.webp',
-                'emoji/halflife.webp',
-                'emoji/klass.webp',
-                'emoji/lambda.webp',
-                'emoji/microcop.webp',
-                'emoji/oreh.webp',
-                'emoji/resistance.webp',
-                'emoji/sas.webp',
-                'emoji/shephard.webp',
-                'emoji/stahp.webp',
-                'emoji/strong.webp',
-                'emoji/thinking~1.webp',
-                'emoji/yareyare.webp'
-            ];
-            
-            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-            emoji.style.backgroundImage = `url('${randomEmoji}')`;
+            emoji.style.backgroundImage = `url('${getRandomEmoji()}')`;
             
             const posX = Math.random() * window.innerWidth;
             emoji.style.left = `${posX}px`;
@@ -1510,10 +1617,6 @@
         }
 
         function animateEmojis() {
-            const viewportHeight = window.innerHeight;
-            const elementsToCheck = document.querySelectorAll('.year-card, h1, .subtitle, .moment-item, .footer');
-            const elementRects = Array.from(elementsToCheck).map(el => el.getBoundingClientRect());
-            
             for (let i = activeEmojis.length - 1; i >= 0; i--) {
                 const emoji = activeEmojis[i];
                 
@@ -1528,23 +1631,13 @@
                 emoji.rotation += emoji.rotationSpeed;
                 emoji.element.style.transform = `rotate(${emoji.rotation}deg)`;
                 
-                if (emoji.position > viewportHeight) {
-                    removeEmoji(emoji);
-                    continue;
+                if (emoji.position > window.innerHeight - 100) {
+                    emoji.element.style.opacity = (window.innerHeight - emoji.position) / 100;
                 }
                 
-                const emojiRect = emoji.element.getBoundingClientRect();
-                
-                for (const rect of elementRects) {
-                    if (
-                        emojiRect.left < rect.right &&
-                        emojiRect.right > rect.left &&
-                        emojiRect.top < rect.bottom &&
-                        emojiRect.bottom > rect.top
-                    ) {
-                        handleCollision(emoji);
-                        break;
-                    }
+                if (emoji.position > window.innerHeight) {
+                    removeEmoji(emoji);
+                    continue;
                 }
             }
             
@@ -1553,16 +1646,6 @@
             } else {
                 lastAnimationFrame = null;
             }
-        }
-
-        function handleCollision(emoji) {
-            emoji.element.style.transition = 'transform 0.1s, opacity 0.5s';
-            emoji.element.style.transform = `rotate(${emoji.rotation}deg) translateY(-5px)`;
-            emoji.element.style.opacity = '0';
-            
-            setTimeout(() => {
-                removeEmoji(emoji);
-            }, 500);
         }
 
         function removeEmoji(emoji) {
@@ -1574,15 +1657,37 @@
             }
         }
 
-        setInterval(createFallingEmoji, 700 + Math.random() * 300);
+        function startEmojiSystem() {
+            if (emojiInterval) clearInterval(emojiInterval);
+            emojiInterval = setInterval(createFallingEmoji, 700 + Math.random() * 300);
+            
+            activeEmojis.forEach(emoji => removeEmoji(emoji));
+            activeEmojis.length = 0;
+            
+            setTimeout(() => {
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(createFallingEmoji, i * 200);
+                }
+            }, 1000);
+        }
 
-        setTimeout(() => {
-            for (let i = 0; i < 5; i++) {
-                setTimeout(createFallingEmoji, i * 200);
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                if (emojiInterval) {
+                    clearInterval(emojiInterval);
+                    emojiInterval = null;
+                }
+                if (lastAnimationFrame) {
+                    cancelAnimationFrame(lastAnimationFrame);
+                    lastAnimationFrame = null;
+                }
+            } else {
+                startEmojiSystem();
             }
-        }, 1000);
+        });
 
-        // Media files data
+        startEmojiSystem();
+
         const mediaFiles = [
             { type: 'video', url: 'assets/vid/1v_stoyak.webm', caption: 'Стоякоуский', tags: ['video', 'funny'] },
             { type: 'video', url: 'assets/vid/2v_buhailparasha.webm', caption: 'Бухаил Парашевич', tags: ['video', 'funny'] },
@@ -1659,7 +1764,6 @@
             { type: 'image', url: 'assets/img/21i_he_view.webp', caption: 'He view', tags: ['image', 'cool'] }
         ];
 
-        // Show random moment (only images)
         function showRandomMoment() {
             const randomMoment = document.getElementById('random-moment');
             const imagesOnly = mediaFiles.filter(media => media.type === 'image');
@@ -1668,7 +1772,6 @@
             
             randomMoment.innerHTML = '';
             
-            // Create loading placeholder
             const placeholder = document.createElement('div');
             placeholder.className = 'loading-placeholder';
             placeholder.innerHTML = '<div class="loading-spinner"></div>';
@@ -1692,7 +1795,6 @@
             randomMoment.addEventListener('click', () => openMediaPlayer(media));
         }
 
-        // Load all moments - ВСЁ ГРУЗИТСЯ СРАЗУ КАК И РАНЬШЕ
         function loadAllMoments() {
             const momentsGrid = document.getElementById('moments-grid');
             momentsGrid.innerHTML = '';
@@ -1702,7 +1804,6 @@
                 momentItem.className = 'moment-item';
                 momentItem.dataset.type = media.type;
                 
-                // Add loading placeholder
                 const placeholder = document.createElement('div');
                 placeholder.className = 'loading-placeholder';
                 placeholder.innerHTML = '<div class="loading-spinner"></div>';
@@ -1717,7 +1818,6 @@
                     mediaElement.src = media.url;
                     momentItem.appendChild(mediaElement);
                 } else {
-                    // Видео загружается сразу как и раньше
                     mediaElement = document.createElement('video');
                     mediaElement.muted = true;
                     mediaElement.loop = true;
@@ -1728,7 +1828,6 @@
                         placeholder.remove();
                     };
                     
-                    // Если видео не загрузилось, все равно убираем плейсхолдер через 3 секунды
                     setTimeout(() => {
                         if (placeholder.parentNode) {
                             placeholder.remove();
@@ -1753,7 +1852,6 @@
             });
         }
 
-        // Setup category filters
         function setupCategoryFilters() {
             const categoryBtns = document.querySelectorAll('.category-btn');
             
@@ -1776,7 +1874,6 @@
             });
         }
 
-        // Media player functionality
         let currentMedia = null;
         let currentVideo = null;
         let isPlaying = false;
@@ -1792,7 +1889,6 @@
             
             playerContainer.innerHTML = '';
             
-            // Add loading state
             const placeholder = document.createElement('div');
             placeholder.className = 'loading-placeholder';
             placeholder.innerHTML = '<div class="loading-spinner"></div>';
@@ -1808,7 +1904,6 @@
                 playerContainer.appendChild(img);
                 document.getElementById('media-controls').style.display = 'none';
                 
-                // Close player when clicking on image
                 playerContainer.addEventListener('click', (e) => {
                     if (e.target === playerContainer || e.target === img) {
                         closeMediaPlayer();
@@ -1827,14 +1922,8 @@
                 currentVideo = video;
                 setupVideoPlayer(video);
                 
-                // Toggle play/pause when clicking on video
-                video.addEventListener('click', () => {
-                    if (isPlaying) {
-                        video.pause();
-                    } else {
-                        video.play();
-                    }
-                    isPlaying = !isPlaying;
+                playerContainer.addEventListener('click', () => {
+                    togglePlayPause();
                 });
             }
             
@@ -1845,6 +1934,7 @@
             }, 10);
             
             document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = '12px';
         }
 
         function setupVideoPlayer(video) {
@@ -1854,9 +1944,8 @@
             const muteBtn = document.getElementById('mute-btn');
             const volumeSlider = document.getElementById('volume-slider');
             const volumeLevel = document.getElementById('volume-level');
-            const playerOverlay = document.getElementById('media-player-overlay');
+            const playBtn = document.getElementById('play-btn');
             
-            // Restore volume settings
             video.volume = currentVolume;
             volumeLevel.style.width = `${currentVolume * 100}%`;
             video.muted = isMuted;
@@ -1864,12 +1953,14 @@
             
             video.play().then(() => {
                 isPlaying = true;
+                playBtn.textContent = '⏸';
             }).catch(e => {
                 isPlaying = false;
+                playBtn.textContent = '▶';
             });
             
             video.addEventListener('timeupdate', () => {
-                if (!isDraggingProgress) {
+                if (!isDraggingProgress && video.duration) {
                     const progress = (video.currentTime / video.duration) * 100;
                     progressBar.style.width = `${progress}%`;
                     
@@ -1884,10 +1975,18 @@
                 }
             });
             
+            video.addEventListener('ended', () => {
+                isPlaying = false;
+                playBtn.textContent = '▶';
+                video.currentTime = 0;
+                progressBar.style.width = '0%';
+            });
+            
             progressContainer.addEventListener('click', (e) => {
                 const rect = progressContainer.getBoundingClientRect();
                 const pos = (e.clientX - rect.left) / rect.width;
                 video.currentTime = pos * video.duration;
+                progressBar.style.width = `${pos * 100}%`;
             });
             
             progressContainer.addEventListener('mousedown', (e) => {
@@ -1895,6 +1994,7 @@
                 const rect = progressContainer.getBoundingClientRect();
                 const pos = (e.clientX - rect.left) / rect.width;
                 video.currentTime = pos * video.duration;
+                progressBar.style.width = `${pos * 100}%`;
             });
             
             document.addEventListener('mousemove', (e) => {
@@ -1910,54 +2010,83 @@
                 isDraggingProgress = false;
             });
             
-            muteBtn.addEventListener('click', () => {
+            playBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                togglePlayPause();
+            });
+            
+            muteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 isMuted = !isMuted;
                 video.muted = isMuted;
                 muteBtn.textContent = isMuted ? '🔇' : '🔊';
             });
             
+            volumeSlider.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const rect = volumeSlider.getBoundingClientRect();
+                const pos = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+                currentVolume = pos;
+                video.volume = currentVolume;
+                volumeLevel.style.width = `${currentVolume * 100}%`;
+                
+                if (currentVolume === 0) {
+                    isMuted = true;
+                    muteBtn.textContent = '🔇';
+                    video.muted = true;
+                } else {
+                    isMuted = false;
+                    muteBtn.textContent = '🔊';
+                    video.muted = false;
+                }
+            });
+            
             volumeSlider.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
                 isDraggingVolume = true;
-                updateVolume(e, volumeSlider, video, volumeLevel, muteBtn);
+                const rect = volumeSlider.getBoundingClientRect();
+                const pos = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+                currentVolume = pos;
+                video.volume = currentVolume;
+                volumeLevel.style.width = `${currentVolume * 100}%`;
             });
             
             document.addEventListener('mousemove', (e) => {
                 if (isDraggingVolume) {
-                    updateVolume(e, volumeSlider, video, volumeLevel, muteBtn);
+                    const rect = volumeSlider.getBoundingClientRect();
+                    const pos = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+                    currentVolume = pos;
+                    video.volume = currentVolume;
+                    volumeLevel.style.width = `${currentVolume * 100}%`;
+                    
+                    if (currentVolume === 0) {
+                        isMuted = true;
+                        muteBtn.textContent = '🔇';
+                        video.muted = true;
+                    } else {
+                        isMuted = false;
+                        muteBtn.textContent = '🔊';
+                        video.muted = false;
+                    }
                 }
             });
             
             document.addEventListener('mouseup', () => {
                 isDraggingVolume = false;
             });
-            
-            video.addEventListener('ended', () => {
-                isPlaying = false;
-            });
-            
-            playerOverlay.addEventListener('click', (e) => {
-                if (e.target === playerOverlay) {
-                    closeMediaPlayer();
-                }
-            });
         }
         
-        function updateVolume(e, volumeSlider, video, volumeLevel, muteBtn) {
-            const rect = volumeSlider.getBoundingClientRect();
-            const pos = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-            currentVolume = pos;
-            video.volume = currentVolume;
-            volumeLevel.style.width = `${currentVolume * 100}%`;
+        function togglePlayPause() {
+            if (!currentVideo) return;
             
-            if (currentVolume === 0) {
-                isMuted = true;
-                muteBtn.textContent = '🔇';
-                video.muted = true;
+            if (isPlaying) {
+                currentVideo.pause();
+                document.getElementById('play-btn').textContent = '▶';
             } else {
-                isMuted = false;
-                muteBtn.textContent = '🔊';
-                video.muted = false;
+                currentVideo.play();
+                document.getElementById('play-btn').textContent = '⏸';
             }
+            isPlaying = !isPlaying;
         }
 
         document.getElementById('close-player').addEventListener('click', closeMediaPlayer);
@@ -1966,112 +2095,106 @@
           const playerOverlay = document.getElementById('media-player-overlay');
           
           playerOverlay.style.opacity = '0';
-          document.querySelector('.media-player-container').style.transform = 'scale(0.9)';
+          document.querySelector('.media-player-container').style.transform = 'scale(0.95)';
           
           setTimeout(() => {
             playerOverlay.style.display = 'none';
             
             if (currentVideo) {
               currentVideo.pause();
+              currentVideo.currentTime = 0;
               isPlaying = false;
               
-              // Сбрасываем состояние звука при закрытии
-              isMuted = false;
+              document.getElementById('play-btn').textContent = '▶';
+              document.getElementById('progress-bar').style.width = '0%';
+              document.getElementById('time-display').textContent = '0:00 / 0:00';
+              
               currentVideo = null;
             }
             
             document.body.style.overflow = 'auto';
+            document.body.style.paddingRight = '';
           }, 300);
         }
 
-        // Show all moments button
         document.getElementById('show-all-btn').addEventListener('click', () => {
             document.querySelector('.random-moment').style.display = 'none';
             document.getElementById('all-moments').style.display = 'block';
             document.getElementById('all-moments').style.opacity = '1';
         });
 
-        // Back to random button
         document.getElementById('back-to-random').addEventListener('click', () => {
             document.getElementById('all-moments').style.display = 'none';
             document.querySelector('.random-moment').style.display = 'block';
             showRandomMoment();
         });
 
-        // Initialize on window load
         window.addEventListener('load', () => {
             showRandomMoment();
             loadAllMoments();
             setupCategoryFilters();
+            
+            const toggleWrapper = document.createElement('div');
+            toggleWrapper.className = 'footer-toggle-wrapper';
+            toggleWrapper.innerHTML = '<button id="toggleFooterBtn" class="footer-toggle-btn" title="Скрыть футер">▲</button>';
+            document.body.appendChild(toggleWrapper);
+            
+            const toggleBtn = document.getElementById('toggleFooterBtn');
+            const footer = document.querySelector('.footer');
+            
+            function updateButtonPosition() {
+                toggleWrapper.classList.add('visible');
+                
+                if (footer.classList.contains('footer-hidden')) {
+                    toggleWrapper.style.bottom = '10px';
+                    toggleBtn.textContent = '▲';
+                    toggleBtn.title = "Показать футер";
+                } else {
+                    const footerHeight = footer.offsetHeight;
+                    toggleWrapper.style.bottom = `${footerHeight + 15}px`;
+                    toggleBtn.textContent = '▼';
+                    toggleBtn.title = "Скрыть футер";
+                }
+                
+                const mediaPlayerOverlay = document.getElementById('media-player-overlay');
+                if (mediaPlayerOverlay.style.display === 'flex') {
+                    toggleWrapper.style.filter = 'blur(2px)';
+                    toggleWrapper.style.opacity = '0.7';
+                } else {
+                    toggleWrapper.style.filter = 'none';
+                    toggleWrapper.style.opacity = '1';
+                }
+            }
+            
+            toggleBtn.addEventListener('click', function() {
+                footer.classList.toggle('footer-hidden');
+                updateButtonPosition();
+            });
+            
+            setTimeout(() => {
+                updateButtonPosition();
+                
+                const observer = new ResizeObserver(() => {
+                    if (!footer.classList.contains('footer-hidden')) {
+                        updateButtonPosition();
+                    }
+                });
+                observer.observe(footer);
+                
+                const mediaObserver = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.attributeName === 'style') {
+                            updateButtonPosition();
+                        }
+                    });
+                });
+                const mediaPlayerOverlay = document.getElementById('media-player-overlay');
+                mediaObserver.observe(mediaPlayerOverlay, {
+                    attributes: true,
+                    attributeFilter: ['style']
+                });
+            }, 100);
         });
-
-// Ждем полной загрузки страницы и всех ресурсов
-window.addEventListener('load', function() {
-  const toggleBtn = document.getElementById('toggleFooterBtn');
-  const footer = document.querySelector('.footer');
-  const toggleWrapper = document.querySelector('.footer-toggle-wrapper');
-  const mediaPlayerOverlay = document.getElementById('media-player-overlay');
-  
-  // Функция для обновления позиции кнопки
-  function updateButtonPosition() {
-    // Сначала делаем кнопку видимой
-    toggleWrapper.classList.add('visible');
-    
-    if (footer.classList.contains('footer-hidden')) {
-      // Если футер скрыт - фиксированная позиция
-      toggleWrapper.style.bottom = '10px';
-      toggleBtn.textContent = '▲';
-      toggleBtn.title = "Показать футер";
-    } else {
-      // Если футер видим - позиция над футером
-      const footerHeight = footer.offsetHeight;
-      toggleWrapper.style.bottom = `${footerHeight + 15}px`;
-      toggleBtn.textContent = '▼';
-      toggleBtn.title = "Скрыть футер";
-    }
-    
-    // Блюр при открытом плеере
-    if (mediaPlayerOverlay.style.display === 'flex') {
-      toggleWrapper.style.filter = 'blur(2px)';
-      toggleWrapper.style.opacity = '0.7';
-    } else {
-      toggleWrapper.style.filter = 'none';
-      toggleWrapper.style.opacity = '1';
-    }
-  }
-  
-  // Обработчик клика
-  toggleBtn.addEventListener('click', function() {
-    footer.classList.toggle('footer-hidden');
-    updateButtonPosition();
-  });
-  
-  // Инициализация с небольшой задержкой для гарантированной загрузки футера
-  setTimeout(() => {
-    updateButtonPosition();
-    
-    // Подписка на изменения размера футера
-    const observer = new ResizeObserver(() => {
-      if (!footer.classList.contains('footer-hidden')) {
-        updateButtonPosition();
-      }
-    });
-    observer.observe(footer);
-    
-    // Подписка на изменения медиа-плеера
-    const mediaObserver = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'style') {
-          updateButtonPosition();
-        }
-      });
-    });
-    mediaObserver.observe(mediaPlayerOverlay, {
-      attributes: true,
-      attributeFilter: ['style']
-    });
-  }, 100); // Небольшая задержка для стабилизации DOM
-});
     </script>
 </body>
 </html>
@@ -2108,37 +2231,7 @@ window.addEventListener('load', function() {
       "Отсылаем вино…"
     ];
 
-    const emojiUrls = [
-                'emoji/a_angrycat.webp',
-                'emoji/a_cat.webp',
-                'emoji/a_coolcat.webp',
-                'emoji/a_jolynecat.webp',
-                'emoji/a_jotarocat.webp',
-                'emoji/a_policecat.webp',
-                'emoji/b_catsuperevent.webp',
-                'emoji/buzova.webp',
-                'emoji/c_knuckangrycoffie.webp',
-                'emoji/c_knuckcoffie.webp',
-                'emoji/c_knuckcool.webp',
-                'emoji/catt.webp',
-                'emoji/chadmedic.webp',
-                'emoji/clueless.webp',
-                'emoji/cool~1.webp',
-                'emoji/dwayne.webp',
-                'emoji/g_cooldog.webp',
-                'emoji/halflife.webp',
-                'emoji/klass.webp',
-                'emoji/lambda.webp',
-                'emoji/microcop.webp',
-                'emoji/oreh.webp',
-                'emoji/resistance.webp',
-                'emoji/sas.webp',
-                'emoji/shephard.webp',
-                'emoji/stahp.webp',
-                'emoji/strong.webp',
-                'emoji/thinking~1.webp',
-                'emoji/yareyare.webp'
-    ];
+    const emojiUrls = Array.from({length: 50}, (_, i) => `emoji/emoji${i}.webp`);
 
     const gridContainer = document.getElementById('gifGrid');
     const loadingTextEl = document.getElementById('loadingText');
