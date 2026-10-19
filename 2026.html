@@ -250,7 +250,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding-right: 45px; /* Отступ справа, чтобы текст не залезал под иконку */
+            padding-right: 50px; /* Отступ справа под широкую иконку */
             min-height: 2.4rem;
         }
         
@@ -293,22 +293,24 @@
             cursor: pointer;
         }
 
-        /* Иконка YouTube теперь сверху справа, рядом с текстом */
+        /* Широкая иконка YouTube (кнопка) */
         .yt-icon-link {
             position: absolute;
             top: 1.2rem;
             right: 1.2rem;
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 28px;
+            border-radius: 6px;
             cursor: pointer;
             z-index: 10;
-            transition: transform 0.2s ease, filter 0.2s ease;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            object-fit: contain;
         }
 
         .yt-icon-link:hover {
-            transform: scale(1.15);
-            filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.6));
+            transform: scale(1.1);
+            box-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
         }
         
         .loading {
