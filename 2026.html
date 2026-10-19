@@ -226,6 +226,7 @@
         
         .stream-info {
             padding: 1.2rem;
+            position: relative;
         }
         
         .stream-number {
@@ -261,6 +262,7 @@
             display: flex;
             align-items: center;
             font-size: 0.9rem;
+            margin-bottom: 1rem;
         }
         
         .status-icon {
@@ -280,6 +282,7 @@
             color: var(--warning);
         }
         
+        /* Ссылка-обертка для открытия модалки */
         .stream-link {
             position: absolute;
             top: 0;
@@ -288,6 +291,31 @@
             height: 100%;
             z-index: 2;
             cursor: pointer;
+        }
+
+        /* Кнопка перехода напрямую на YouTube */
+        .goto-btn {
+            position: relative;
+            z-index: 10;
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Montserrat', sans-serif;
+            text-decoration: none;
+        }
+
+        .goto-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 69, 0, 0.3);
         }
         
         .loading {
@@ -367,27 +395,31 @@
             display: block;
             border: none;
         }
+        
+        /* Кнопка закрытия (крестик), вынесенная наружу */
         .video-modal-close {
-            position: absolute;
-            top: 15px;
-            right: 15px;
+            position: fixed;
+            top: 30px;
+            right: 40px;
             background: rgba(0, 0, 0, 0.7);
             color: white;
-            border: none;
-            width: 40px;
-            height: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            font-size: 1.5rem;
+            font-size: 2rem;
+            line-height: 1;
             cursor: pointer;
-            z-index: 10;
+            z-index: 1010;
             backdrop-filter: blur(4px);
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         .video-modal-close:hover {
             background: var(--primary);
+            border-color: var(--primary);
             transform: rotate(90deg) scale(1.1);
         }
 
@@ -415,6 +447,13 @@
             }
             .video-modal-container {
                 width: 95%;
+            }
+            .video-modal-close {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -450,8 +489,10 @@
 
     <!-- Модальное окно плеера -->
     <div class="video-modal-overlay" id="videoModalOverlay">
+        <!-- Крестик теперь снаружи плеера -->
+        <button class="video-modal-close" id="closeVideoModal">&times;</button>
+        
         <div class="video-modal-container" id="videoModalContainer">
-            <button class="video-modal-close" id="closeVideoModal">&times;</button>
             <iframe id="youtubeIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
     </div>
@@ -532,7 +573,6 @@ document.addEventListener('DOMContentLoaded', function() {
             window.open(originalUrl, '_blank');
             return;
         }
-        // Загружаем видео с автовоспроизведением
         iframePlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
         
         modalOverlay.style.display = 'flex';
@@ -548,7 +588,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modalContainer.style.transform = 'scale(0.95)';
         setTimeout(() => {
             modalOverlay.style.display = 'none';
-            iframePlayer.src = ''; // Останавливаем видео
+            iframePlayer.src = ''; 
             document.body.style.overflow = '';
         }, 300);
     }
@@ -756,14 +796,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="status-icon ${statusClass}">${stream.statusIcon}</span>
                         <span>${statusText}</span>
                     </div>
+                    <button class="goto-btn">Перейти на YouTube</button>
                 </div>
                 <a href="${stream.url}" class="stream-link"></a>`;
             
-            // Заменяем стандартный переход по ссылке на открытие модального окна
+            // Ссылка-обертка открывает модалку
             const link = card.querySelector('.stream-link');
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 openVideoModal(stream.videoId, stream.url);
+            });
+
+            // Кнопка «Перейти» открывает ютуб напрямую
+            const gotoBtn = card.querySelector('.goto-btn');
+            gotoBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Останавливаем клик, чтобы не открылась модалка
+                window.open(stream.url, '_blank');
             });
             
             streamsContainer.appendChild(card);
