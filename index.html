@@ -223,9 +223,14 @@
         .year-card[data-year="2025"]::before { background-image: url('assets/background/2025.webp'); }
         .year-card[data-year="2026"]::before { background-image: url('assets/background/2026.webp'); }
         .year-card.all-card::before { background-image: url('assets/img/5i_cryptobody.webp'); }
+        
+        /* Увеличенная плашка ВСЕ */
         .year-card.all-card {
+            grid-column: span 2;
+            grid-row: span 2;
             background: rgba(255, 126, 51, 0.1);
         }
+        
         .year-card::after {
             content: '';
             position: absolute;
@@ -253,20 +258,20 @@
             position: relative;
         }
         .all-card .year-number {
-            font-size: 2.5rem;
+            font-size: 5rem; /* Увеличенный текст для ВСЕ */
         }
         
-        /* Счетчики теперь видны всегда */
+        /* Счетчики (всегда видимы) */
         .year-counters {
             position: absolute;
-            bottom: 10px;
+            bottom: 15px;
             left: 0;
             width: 100%;
             display: flex;
             justify-content: center;
             gap: 8px;
-            opacity: 1; /* Изменено с 0 на 1 */
-            transform: translateY(0); /* Изменено с 10px на 0 */
+            opacity: 1;
+            transform: translateY(0);
             transition: all 0.3s ease;
             pointer-events: none;
             z-index: 2;
@@ -295,33 +300,27 @@
             font-weight: 700;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
+        
+        /* Увеличенные счетчики для ВСЕ */
+        .all-card .year-counters {
+            bottom: 25px;
+            gap: 12px;
+        }
+        .all-card .counter {
+            padding: 8px 12px;
+            min-width: 60px;
+            font-size: 12px;
+        }
+        .all-card .counter-number {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
+        
         .counter.total .counter-number { background: var(--all-color); color: #fff; }
         .counter.available .counter-number { background: var(--success); color: #003311; }
         .counter.unavailable .counter-number { background: var(--error); color: #fff; }
         
-        .particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            overflow: hidden;
-            border-radius: 16px;
-        }
-        .particle {
-            position: absolute;
-            background-size: contain;
-            background-repeat: no-repeat;
-            pointer-events: none;
-        }
-        @keyframes float {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(10px, -10px) rotate(90deg); }
-            50% { transform: translate(-10px, 15px) rotate(180deg); }
-            75% { transform: translate(15px, -5px) rotate(270deg); }
-            100% { transform: translate(0, 0) rotate(360deg); }
-        }
         .falling-emoji-container {
             position: fixed;
             top: 0;
@@ -770,10 +769,14 @@
         @media (max-width: 768px) {
             .container { padding: 1rem; padding-bottom: 80px; }
             .years-grid { grid-template-columns: repeat(2, 1fr); }
+            .year-card.all-card {
+                grid-column: span 2;
+                grid-row: span 1;
+            }
             .moments-grid { grid-template-columns: repeat(2, 1fr); }
             h1 { font-size: 2rem; }
             .year-number { font-size: 2.5rem; }
-            .all-card .year-number { font-size: 2rem; }
+            .all-card .year-number { font-size: 3.5rem; }
             .media-player-container { width: 95%; }
             .media-controls { padding: 0.5rem; gap: 0.5rem; flex-wrap: wrap; }
             .media-controls button { width: 32px; height: 32px; font-size: 1rem; }
@@ -787,6 +790,10 @@
         }
         @media (max-width: 480px) {
             .years-grid { grid-template-columns: 1fr; }
+            .year-card.all-card {
+                grid-column: span 1;
+                grid-row: span 1;
+            }
             .moments-grid { grid-template-columns: 1fr; }
             .social-container { gap: 15px; }
             .social-icon { width: 44px; height: 44px; }
@@ -868,13 +875,14 @@
 </div>
 <script>
     (function(){
+        // Измененный порядок: ВСЕ, 2026, 2025, 2024, 2023, 2022
         const yearsData = [
-            { year: 2022, total: '...', available: '...', unavailable: '...', all: false },
-            { year: 2023, total: '...', available: '...', unavailable: '...', all: false },
-            { year: 2024, total: '...', available: '...', unavailable: '...', all: false },
-            { year: 2025, total: '...', available: '...', unavailable: '...', all: false },
+            { year: 0, total: '...', available: '...', unavailable: '...', all: true },
             { year: 2026, total: '...', available: '...', unavailable: '...', all: false },
-            { year: 0, total: '...', available: '...', unavailable: '...', all: true }
+            { year: 2025, total: '...', available: '...', unavailable: '...', all: false },
+            { year: 2024, total: '...', available: '...', unavailable: '...', all: false },
+            { year: 2023, total: '...', available: '...', unavailable: '...', all: false },
+            { year: 2022, total: '...', available: '...', unavailable: '...', all: false }
         ];
         
         const mediaFiles = [
@@ -1122,7 +1130,6 @@
                 card.style.opacity = '0';
                 card.style.transform = 'translateY(20px)';
                 card.innerHTML = `
-                    <div class="particles"></div>
                     <div class="year-number">${data.all ? 'ВСЕ' : data.year}</div>
                     <div class="year-counters">
                         <div class="counter total" title="Всего стримов"><div class="counter-number">${data.total}</div><div class="counter-label">Всего</div></div>
@@ -1132,21 +1139,6 @@
                 `;
                 yearsGrid.appendChild(card);
                 setTimeout(() => { card.style.opacity = '1'; card.style.transform = 'translateY(0)'; }, 50);
-            });
-            document.querySelectorAll('.year-card').forEach(card => {
-                const particlesDiv = card.querySelector('.particles');
-                for (let i=0; i<5; i++) {
-                    const p = document.createElement('div');
-                    p.className = 'particle';
-                    const size = 10 + Math.random() * 15;
-                    p.style.width = `${size}px`; p.style.height = `${size}px`;
-                    p.style.left = `${Math.random() * 100}%`; p.style.top = `${Math.random() * 100}%`;
-                    p.style.backgroundImage = `url('${emojiUrls[Math.floor(Math.random() * emojiUrls.length)]}')`;
-                    p.style.backgroundSize = 'contain';
-                    p.style.animation = `float ${5 + Math.random() * 10}s ${Math.random() * 3}s infinite ease-in-out`;
-                    p.style.opacity = 0.3 + Math.random() * 0.3;
-                    particlesDiv.appendChild(p);
-                }
             });
             document.querySelectorAll('.year-card').forEach(card => {
                 card.addEventListener('click', (e) => {
