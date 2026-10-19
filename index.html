@@ -255,6 +255,8 @@
         .all-card .year-number {
             font-size: 2.5rem;
         }
+        
+        /* Стили для счетчиков: сделаны компактнее */
         .year-counters {
             position: absolute;
             bottom: 10px;
@@ -262,7 +264,7 @@
             width: 100%;
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 8px;
             opacity: 0;
             transform: translateY(10px);
             transition: all 0.3s ease;
@@ -277,29 +279,29 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            font-size: 12px;
+            gap: 2px;
+            font-size: 10px;
             font-weight: 600;
             background: rgba(0, 0, 0, 0.7);
-            padding: 6px 10px;
-            border-radius: 10px;
+            padding: 4px 8px;
+            border-radius: 8px;
             backdrop-filter: blur(4px);
-            min-width: 50px;
+            min-width: 45px;
         }
         .counter-number {
-            width: 26px;
-            height: 26px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 10px;
             font-weight: 700;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
         .counter.total .counter-number { background: var(--all-color); color: #fff; }
         .counter.available .counter-number { background: var(--success); color: #003311; }
-        .counter.unavailable .counter-number { background: var(--error); color: #fff; }
+        
         .particles {
             position: absolute;
             top: 0;
@@ -785,10 +787,6 @@
             .social-container { gap: 20px; }
             .social-icon { width: 48px; height: 48px; }
             .social-icon .platform-badge { width: 22px; height: 22px; bottom: -2px; right: -2px; }
-            .year-counters { gap: 8px; bottom: 8px; }
-            .counter { padding: 4px 8px; min-width: 40px; }
-            .counter-number { width: 22px; height: 22px; font-size: 11px; }
-            .counter-label { font-size: 9px; }
         }
         @media (max-width: 480px) {
             .years-grid { grid-template-columns: 1fr; }
@@ -874,12 +872,12 @@
 <script>
     (function(){
         const yearsData = [
-            { year: 2022, total: '...', available: '...', unavailable: '...' },
-            { year: 2023, total: '...', available: '...', unavailable: '...' },
-            { year: 2024, total: '...', available: '...', unavailable: '...' },
-            { year: 2025, total: '...', available: '...', unavailable: '...' },
-            { year: 2026, total: '...', available: '...', unavailable: '...' },
-            { year: 0, total: '...', available: '...', unavailable: '...', all: true }
+            { year: 2022, total: '...', available: '...', all: false },
+            { year: 2023, total: '...', available: '...', all: false },
+            { year: 2024, total: '...', available: '...', all: false },
+            { year: 2025, total: '...', available: '...', all: false },
+            { year: 2026, total: '...', available: '...', all: false },
+            { year: 0, total: '...', available: '...', all: true }
         ];
         
         const mediaFiles = [
@@ -1132,7 +1130,6 @@
                     <div class="year-counters">
                         <div class="counter total" title="Всего стримов"><div class="counter-number">${data.total}</div><div class="counter-label">Всего</div></div>
                         <div class="counter available" title="Доступных"><div class="counter-number">${data.available}</div><div class="counter-label">Доступно</div></div>
-                        <div class="counter unavailable" title="Недоступных"><div class="counter-number">${data.unavailable}</div><div class="counter-label">Недоступно</div></div>
                     </div>
                 `;
                 yearsGrid.appendChild(card);
@@ -1165,58 +1162,52 @@
 
         async function updateDynamicCounters() {
             const years = [2022, 2023, 2024, 2025, 2026];
-            const newYearsData = years.map(y => ({ year: y, total: 0, available: 0, unavailable: 0 }));
-            const allData = { year: 0, total: 0, available: 0, unavailable: 0, all: true };
+            const newYearsData = years.map(y => ({ year: y, total: 0, available: 0 }));
+            const allData = { year: 0, total: 0, available: 0, all: true };
             const allVideos = [];
 
             try {
                 const fetchPromises = years.map(y => fetch(`${y}.html`).then(res => {
-                    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+                    if (!res.ok) return ''; // Если файла нет, возвращаем пустую строку
                     return res.text();
-                }));
+                }).catch(() => ''));
+                
                 const texts = await Promise.all(fetchPromises);
 
-                const regex = /^#\d+\s+(https?:\/\/\S+)\s+(\d{2}\.\d{2}\.\d{4})\s+.*$/gm;
+                // Более надежная регулярка: ищет просто любые ссылки на YouTube в тексте
+                const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
 
                 texts.forEach((text, index) => {
                     const year = years[index];
-                    let match;
-                    while ((match = regex.exec(text)) !== null) {
-                        const url = match[1];
-                        const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+                    const matches = text.match(regex) || [];
+                    const uniqueMatches = [...new Set(matches)]; // Убираем дубликаты
+
+                    uniqueMatches.forEach(url => {
+                        const videoIdMatch = url.match(/([a-zA-Z0-9_-]{11})$/);
                         if (videoIdMatch) {
                             allVideos.push({ year, videoId: videoIdMatch[1] });
                             const yd = newYearsData.find(d => d.year === year);
                             yd.total++;
                             allData.total++;
                         }
-                    }
+                    });
                 });
 
-                // Update totals instantly
+                // Мгновенно обновляем "Всего"
                 yearsData.forEach(d => {
-                    if (d.all) return;
-                    const nd = newYearsData.find(x => x.year === d.year);
-                    d.total = nd.total;
-                    d.available = '...';
-                    d.unavailable = '...';
-                });
-                yearsData.find(d => d.all).total = allData.total;
-                yearsData.find(d => d.all).available = '...';
-                yearsData.find(d => d.all).unavailable = '...';
-                
-                // Re-render just the numbers
-                document.querySelectorAll('.year-card').forEach(card => {
-                    const y = card.getAttribute('data-year');
-                    const d = y === 'all' ? yearsData.find(x => x.all) : yearsData.find(x => x.year === parseInt(y));
-                    if (d) {
-                        card.querySelector('.counter.total .counter-number').textContent = d.total;
-                        card.querySelector('.counter.available .counter-number').textContent = d.available;
-                        card.querySelector('.counter.unavailable .counter-number').textContent = d.unavailable;
+                    if (d.all) {
+                        d.total = allData.total;
+                        d.available = '...';
+                    } else {
+                        const nd = newYearsData.find(x => x.year === d.year);
+                        d.total = nd.total;
+                        d.available = '...';
                     }
                 });
+                
+                updateDOMCounters(yearsData);
 
-                // Now check statuses
+                // Начинаем проверять статусы (с кэшем)
                 let processed = 0;
                 const checkPromises = allVideos.map(async (v) => {
                     const cacheKey = `yt_status_${v.videoId}`;
@@ -1242,45 +1233,44 @@
                         localStorage.setItem(cacheKey, JSON.stringify({ isAvailable, timestamp: Date.now() }));
                     }
 
-                    const yd = newYearsData.find(d => d.year === v.year);
                     if (isAvailable) {
+                        const yd = newYearsData.find(d => d.year === v.year);
                         if (yd) yd.available++;
                         allData.available++;
-                    } else {
-                        if (yd) yd.unavailable++;
-                        allData.unavailable++;
                     }
                     processed++;
 
+                    // Обновляем визуал каждые 5 видео или в самом конце
                     if (processed % 5 === 0 || processed === allVideos.length) {
                         yearsData.forEach(d => {
-                            if (d.all) return;
-                            const nd = newYearsData.find(x => x.year === d.year);
-                            d.available = nd.available;
-                            d.unavailable = nd.unavailable;
-                        });
-                        const ad = yearsData.find(d => d.all);
-                        ad.available = allData.available;
-                        ad.unavailable = allData.unavailable;
-
-                        document.querySelectorAll('.year-card').forEach(card => {
-                            const y = card.getAttribute('data-year');
-                            const d = y === 'all' ? ad : yearsData.find(x => x.year === parseInt(y));
-                            if (d) {
-                                card.querySelector('.counter.available .counter-number').textContent = d.available;
-                                card.querySelector('.counter.unavailable .counter-number').textContent = d.unavailable;
+                            if (d.all) {
+                                d.available = allData.available;
+                            } else {
+                                const nd = newYearsData.find(x => x.year === d.year);
+                                d.available = nd.available;
                             }
                         });
+                        updateDOMCounters(yearsData);
                     }
                 });
 
                 await Promise.all(checkPromises);
             } catch (error) {
                 console.error("Failed to load dynamic counters:", error);
-                document.querySelectorAll('.year-card').forEach(card => {
-                    card.querySelectorAll('.counter-number').forEach(el => el.textContent = 'Ошибка');
-                });
             }
+        }
+
+        function updateDOMCounters(dataArray) {
+            document.querySelectorAll('.year-card').forEach(card => {
+                const y = card.getAttribute('data-year');
+                const d = y === 'all' ? dataArray.find(x => x.all) : dataArray.find(x => x.year === parseInt(y));
+                if (d) {
+                    const totalEl = card.querySelector('.counter.total .counter-number');
+                    const availEl = card.querySelector('.counter.available .counter-number');
+                    if(totalEl) totalEl.textContent = d.total;
+                    if(availEl) availEl.textContent = d.available;
+                }
+            });
         }
 
         function openMediaPlayer(media) {
