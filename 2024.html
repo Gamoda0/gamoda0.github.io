@@ -19,6 +19,7 @@
             --error: #ff4d4d;
             --success: #4dff7a;
             --all-color: #ff7e33;
+            --warning: #ffcc00;
         }
         
         * {
@@ -218,7 +219,7 @@
         .stream-thumbnail {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            padding-top: 56.25%;
             background-size: cover;
             background-position: center;
         }
@@ -275,6 +276,10 @@
             color: var(--error);
         }
         
+        .status-checking {
+            color: var(--warning);
+        }
+        
         .stream-link {
             position: absolute;
             top: 0;
@@ -304,7 +309,6 @@
             grid-column: 1 / -1;
         }
         
-        /* Falling emojis styles */
         .falling-emoji-container {
             position: fixed;
             top: 0;
@@ -325,24 +329,6 @@
             background-position: center;
             pointer-events: none;
             will-change: transform;
-        }
-        
-        /* Particles animation */
-        .particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-        
-        .particle {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 50%;
-            pointer-events: none;
         }
         
         @keyframes fadeIn {
@@ -401,129 +387,122 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-            const streamsData = `
-                #1 https://www.youtube.com/watch?v=kyHmidcOINE 06.01.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО
-                #2 https://www.youtube.com/watch?v=sAnJ1rS9QfI 07.01.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО АПЯТ
-                #3 https://www.youtube.com/watch?v=4bGhymJq42g 13.01.2024 ❌ [СТРИМ] ОРБИТАЛЬНЫЙ КОЛЛАПС - VR ИГРЫ
-                #4 https://www.youtube.com/watch?v=iS7nP_xstXQ 14.01.2024 ❌ [СТРИМ] ВИДЕО И ИГРЫ VR (АТКАЧУПА)
-                #5 https://www.youtube.com/watch?v=vgrNx-MQB4Q 20.01.2024 ❌ [СТРИМ] ТОЛЬКО УЖАСЫ (НАДЕЮСЬ)
-                #6 https://www.youtube.com/watch?v=KwpPOXvRpTE 21.01.2024 ❌ [СТРИМ] VR ИГРЫ ЭПИЧЕСКИЕ (ХОРОШИЕ)
-                #7 https://www.youtube.com/watch?v=rOuxQBHBRLE 27.01.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО
-                #8 https://www.youtube.com/watch?v=bMLB9Ojnb1E 28.01.2024 ❌ [СТРИМ] HALF-LIFE ALYX VR - С УЛУЧШЕНИЯМИ (ULRTA HARDCORE)
-                #9 https://www.youtube.com/watch?v=rfnYmYFLQsI 03.02.2024 ✅ [СТРИМ] СТРАШИЛКИ В ВИАРЕ
-                #10 https://www.youtube.com/watch?v=ixw_SZt0tUc 04.02.2024 ✅ [СТРИМ] СМОТРИМ ФИЛЬМ ПО HALF-LIFE
-                #11 https://www.youtube.com/watch?v=0gVoXtAi4wk 11.02.2024 ❌ [СТРИМ] СМОТРЮ ВИДЕО
-                #12 https://www.youtube.com/watch?v=iJHzhDwHHdo 17.02.2024 ❌ [СТРИМ] СМОТРЮ ВИДЕО
-                #13 https://www.youtube.com/watch?v=isdulKkVpsU 18.02.2024 ❌ [СТРИМ] УЖАСЫ. ПРЕСТУПЛЕНИЯ. - СМОТРИМ ВИДЕО
-                #14 https://www.youtube.com/watch?v=MvzajJV0blo 24.02.2024 ❌ [СТРИМ] ВИДЕО НА ОБРАЗОВАТЕЛЬНЫЕ ТЕМЫ
-                #15 https://www.youtube.com/watch?v=QUcuxB1ob2M 25.02.2024 ❌ [СТРИМ] Raising the Bar: Redux + SALVATION
-                #16 https://www.youtube.com/watch?v=aTAg95XmwsI 02.03.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО
-                #17 https://www.youtube.com/watch?v=7tFOQ8Ej3xw 03.03.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО 2
-                #18 https://www.youtube.com/watch?v=Axx8ATCYm1Q 09.03.2024 ❌ [СТРИМ] СМОТРЮ СТАРЫЕ ВИДЕО
-                #19 https://www.youtube.com/watch?v=6e2kklFUOLo 10.03.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО (СПАСМИБА)
-                #20 https://www.youtube.com/watch?v=K-i-rMUdZqs 16.03.2024 ❌ [СТРИМ] =СМОТРИМ ВИДЕО= =ДА ДА, НЕ УДИВЛЯЙТЕСЬ=
-                #21 https://www.youtube.com/watch?v=0AfA-0N5DEk 23.03.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО
-                #22 https://www.youtube.com/watch?v=KlI_TcWnwvw 24.03.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО (А ПОТОМ ИГРА БДЕТЬ)))))))))))
-                #23 https://www.youtube.com/watch?v=3RWxxPbHyu8 30.03.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО +SILENT HILL 2 VR (CLOWNEDITION)
-                #24 https://www.youtube.com/watch?v=ZPKeD_BHKQc 31.03.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО + INTO RHE RADIDSAS
-                #25 https://www.youtube.com/watch?v=I9LrpGEgURc 06.04.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО + SILENT HILL BETA (PS2) 1999
-                #26 https://www.youtube.com/watch?v=woSEg6koH4E 07.04.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО (МАЛО) + SILENT HILL BETA (PS2) 1999
-                #27 https://www.youtube.com/watch?v=tthmF2c5Khc 13.04.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО + SILENT HILL 1 BETA (PS2) (я прошел пианино)
-                #28 https://www.youtube.com/watch?v=RWT2gN7oRF0 14.04.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО + SILENT HILL 1 BETA
-                #29 https://www.youtube.com/watch?v=nomfIQJqqrk 20.04.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО + SILENT HILL АДИН
-                #30 https://www.youtube.com/watch?v=-wOV2zOfmOo 21.04.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО + HALF-LIFE ALYX VR
-                #31 https://www.youtube.com/watch?v=KaM5jbEO4tY 27.04.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО + SILENT HILL 1
-                #32 https://www.youtube.com/watch?v=6X8GJeCmDFE 28.04.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО + HALF-LIFE ALYX (БЕЗ ТРЯСКИ)
-                #33 https://www.youtube.com/watch?v=Cg0PHdbssHw 04.05.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО НЕСМОТРИБЕЛЬНОГО ХАРАКТЕРА
-                #34 https://www.youtube.com/watch?v=MgKxzlr6NBw 11.05.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО УЖАС + SILENT HILL 1
-                #35 https://www.youtube.com/watch?v=sEEIHaGRtJQ 18.05.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО ЛУЧШИЕ
-                #36 https://www.youtube.com/watch?v=LqWt73b9QIo 19.05.2024 ❌ [СТРИМ] HALF-LIFE ALYX + ВИДЕО
-                #37 https://www.youtube.com/watch?v=wHFeVcucu70 25.05.2024 ❌ [СТРИМ] ВИДЕО СМОТРИМ И ИГРЫ SILENT HILL ИГРАЕМ
-                #38 https://www.youtube.com/watch?v=yFWFgGjHdzA 26.05.2024 ❌ [СТРИМ] SILENT HILL + HALF-LIFE ALYX
-                #39 https://www.youtube.com/watch?v=hvM6HQoUIrw 01.06.2024 ❌ [СТРИМ] SILENT HILL + HLA ФИНАЛЫ - ПОТОМ СМОТРИМ ВИДЕО
-                #40 https://www.youtube.com/watch?v=Xl1SHJX4TM8 08.06.2024 ❌ [СТРИМ] Summer Game Fest 2024 (00:00) + МОЖЕТ БЫТЬ ЧТО ТО ОСТАЛЬНОЕ...
-                #41 https://www.youtube.com/watch?v=quzA6mAipEM 08.06.2024 ❌ [СТРИМ] Future of Play Direct (18:00) + The Future Games Show (22:0...
-                #42 https://www.youtube.com/watch?v=2t-VHckHvZA 09.06.2024 ❌ [СТРИМ] Xbox Games Showcase (20:00) + PC Gaming Show 2024 (23:00)
-                #43 https://www.youtube.com/watch?v=b8JABZcqvV8 15.06.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО
-                #44 https://www.youtube.com/watch?v=QPqiWLJ6vTs 16.06.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО (ТОЛЬКО МАТ)
-                #45 https://www.youtube.com/watch?v=r6LY94dQSFc 21.06.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО (ИГРАЕМ ЕСЛИ ЗАСТАВИТЕ)
-                #46 https://www.youtube.com/watch?v=D02HEfTFg6I 22.06.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО (ИГРАЕМ???) (РОЗЫГРЫШ ДИСКОВ)
-                #47 https://www.youtube.com/watch?v=bLXUmgXXJnw 23.06.2024 ❌ [СТРИМ] ТОЛКА АУЖАСИ И СТРАШИЛКЕ
-                #48 https://www.youtube.com/watch?v=AMpKiNBtMhY 28.06.2024 ❌ [СТРИМ] СМОТРИМ СТРАШНЫЕ ВИДЕО
-                #49 https://www.youtube.com/watch?v=2wicbM4VXLk 29.06.2024 ❌ [СТРИМ] СМОТРИМ СТРАШНЫЕ ВИДЕО
-                #50 https://www.youtube.com/watch?v=bogvPBdNPys 29.06.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО ВАШИ
-                #51 https://www.youtube.com/watch?v=tlgcmG5J7Is 05.07.2024 ❌ [СТРИМ] НАКАНЕЦТА НОВЫЕ ВИДЕО ЖЕКСАН (СТРАШЫНЕ)
-                #52 https://www.youtube.com/watch?v=PorgUet6_4w 05.07.2024 ❌ [СТРИМ] СТРАШЫНЕ ВИДЕО НАСТЯ ЖДАКСАН
-                #53 https://www.youtube.com/watch?v=TTBlA3cKIhw 06.07.2024 ❌ [СТРИМ] УЖАСАЮЩИЕ ВИДЕО ОНЛУ АНАЛИТИКА
-                #54 https://www.youtube.com/watch?v=UgZAF2BITz0 07.07.2024 ❌ [СТРИМ] HALF-LIFE 2 EP2 VR - FINAL + SILENT HILL ZERO
-                #55 https://www.youtube.com/watch?v=yzA1jZn--1w 12.07.2024 ❌ [СТРИМ] СМОТРИМ ОМЕРЗИТЕЛЬНЫЕ ВИДЕО
-                #56 https://www.youtube.com/watch?v=7eAJz93ZHos 13.07.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО (ЛУЧШИЕ)
-                #57 https://www.youtube.com/watch?v=d4UTtQkvLx8 14.07.2024 ❌ [СТРИМ] СЕКРЕТНАЯ СЛУЖБА
-                #58 https://www.youtube.com/watch?v=XAau9QLegOk 19.07.2024 ❌ [СТРИМ] СТРАШНЫЕ ВИДЕО + АУКЦИОН НА ФИЛЬМ
-                #59 https://www.youtube.com/watch?v=XWwoBFJgvK4 28.07.2024 ❌ [СТРИМ] ПОЛЕ ЧУДЕС ,РАУЛЬ,РАМЗЕС - ВИДОС
-                #60 https://www.youtube.com/watch?v=G_QWHDrfYRQ 29.07.2024 ❌ [СТРИМ] В ОЧКЕ ТВОРИТЬСЯ АДСКИЙ ЗАМЕС
-                #61 https://www.youtube.com/watch?v=Go1Dc1DMB68 02.08.2024 ❌ [СТРИМ] ПЫТАЮСЬ СМОТРЕТЬ СТРАШИЛКИ
-                #62 https://www.youtube.com/watch?v=TCAcD-qtkdI 03.08.2024 ❌ [СТРИМ] КОРОТКОМЕТРАЖНЫЕ ФИЛЬМЫ УЖАСОВ + ВЫБИРАЕМ ФИЛЬМ
-                #63 https://www.youtube.com/watch?v=lTCIn4ezpvk 09.08.2024 ❌ [СТРИМ] СТРАШНЫЕ ИГРЫ + ЧТО МЫ ДЕЛАЕМ В ТЕНИ (НА ТВИЧЕ)
-                #64 https://www.youtube.com/watch?v=r407EQzdRtE 10.08.2024 ❌ [СТРИМ] СМОТРИ ВИДЕО
-                #65 https://www.youtube.com/watch?v=OO4gHkS4cBU 11.08.2024 ❌ [СТРИМ] ИГРАЮ ИЛИ СМОТРЮ Непоня́тно
-                #66 https://www.youtube.com/watch?v=vNKMriWBq0M 16.08.2024 ❌ [СТРИМ] ИГРАЕМ И СМОТРИМ ВИДЕО
-                #67 https://www.youtube.com/watch?v=XDjcPZCfduA 17.08.2024 ❌ [СТРИМ] ХОРРОР ИГРЫ - SUPERNATURAL MEDIUM VLADIC SASAL FORBIDEN SI...
-                #68 https://www.youtube.com/watch?v=L9yg-ZJDS_g 24.08.2024 ❌ [СТРИМ] СМОТРИМ ИГРЫ И ИГРАЕМ В ВИДЕО
-                #69 https://www.youtube.com/watch?v=qjstZOriaxA 25.08.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО ИГРЫ
-                #70 https://www.youtube.com/watch?v=ETMcB6o1FTE 31.08.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО (ИГРЫ ЭСИ ЗАСТАВИТЕ(
-                #71 https://www.youtube.com/watch?v=GGx52vvV6wU 01.09.2024 ❌ [СТРИМ] СМОТРИМ ВИДЕО И ТОЛЬКО (СТРАШНЫЕ)
-                #72 https://www.youtube.com/watch?v=Hz-UDnMN6L0 05.09.2024 ❌ [СТРИМ] СТРИМ SPACE MARINE 2
-                #73 https://www.youtube.com/watch?v=KD3ZQVE0eSg 08.09.2024 ❌ [СТРИМ] РУССКИЕ СТРАШИЛКИ
-                #74 https://www.youtube.com/watch?v=CJTG5-swik4 14.09.2024 ❌ [СТРИМ] ПРЕКРАСНОЕ УТРО В ГОРАХ ТЯНЬ-ШАНЬ
-                #75 https://www.youtube.com/watch?v=Z0oTBn3uLNA 21.09.2024 ❌ [СТРИМ] ЗАМЕЧАТЕЛЬНЫЙ ВЕЧЕР ВОЗЛЕ СОБАЧЬЕЙ БУДКИ
-                #76 https://www.youtube.com/watch?v=fB5jXO4tYgw 27.09.2024 ❌ [СТРИМ] ВОЛШЕБНАЯ ПЬЯНКА ГОБЛИНОВ В СОРТИРЕ
-                #77 https://www.youtube.com/watch?v=EBt7g87geO8 28.09.2024 ❌ [СТРИМ] ДЕНЬ КОГДА БАНКИ НИКТО НЕ ПОДНИМАЛ
-                #78 https://www.youtube.com/watch?v=jfAzuxOS9QU 05.10.2024 ❌ [СТРИМ] ЗДЕСЬ КОГДА-ТО БЫЛА ДЫРА
-                #79 https://www.youtube.com/watch?v=aFZ4XgJeHhI 06.10.2024 ❌ [СТРИМ] SILENT HILL 2 РЕМЕЙК - ИГРАЕТ ПИ ДИДИ
-                #80 https://www.youtube.com/watch?v=AaCys-NOdHk 12.10.2024 ❌ [СТРИМ] SILENT HILL 2 РЕМЕЙК - НА ХАРДЕ ДЕТАЛЬНОЕ ПРОХОЖДЕНИЕ СКА
-                #81 https://www.youtube.com/watch?v=RiujN45UiUE 13.10.2024 ❌ [СТРИМ] SILENT HILL 2 РЕМЕЙК - НА ХАРДЕ ВСЕ ПАСХАЛКИ ОТ ВАДАЛЕЯ
-                #82 https://www.youtube.com/watch?v=Hh-y-dnApnE 19.10.2024 ❌ [СТРИМ] SILENT HILL 2 РЕМЕЙК - ДЖЕЙМС САНДЕРЛЕНД НИКОГО НЕ УБИВАЛ
-                #83 https://www.youtube.com/watch?v=USzuFSgv5HU 20.10.2024 ❌ [СТРИМ] SILENT HILL 2 РЕМЕЙК - БЕЗ СМЕРТЕЙ ХАРД (ЗАГАДКИ ТОЖЕ)
-                #84 https://www.youtube.com/watch?v=Lw-0_uQBwuo 02.11.2024 ❌ [СТРИМ] SILENT HILL 2 РЕМЕЙК - ПО ФАСТУ ДО КОНЦА
-                #85 https://www.youtube.com/watch?v=unFvJCDjDMU 03.11.2024 ❌ [СТРИМ] IM NOT A HUMAN + SILENT HILL 2 - 6-ОЙ ЧАС НА ПЕРВОМ УРОВНЕ
-                #86 https://www.youtube.com/watch?v=n0xKt977Xek 09.11.2024 ❌ [СТРИМ] Я ИДУ ДО КОНЦА ( ПОПРОБУЮ))
-                #87 https://www.youtube.com/watch?v=7uo-aUK8mqM 10.11.2024 ❌ [СТРИМ] ПЯТЬ КОРЕЙСКИХ КРАСОТОК + СУПЕР СЕДЮСЕР + ЕЩЕ ТАМ МНОГО КРУ...
-                #88 https://www.youtube.com/watch?v=oxFA3WXHLRM 11.11.2024 ❌ [СТРИМ] PROJECT BOREALIS DEMO - ИВ СЁ НА ПОЛ ЧАСА
-                #89 https://www.youtube.com/watch?v=Luox8NKiTc0 23.11.2024 ❌ [СТРИМ] МОЙ ОБЫЧНЫЙ СТРИМ ПО ИГРАМ (Hl2 КОММЕНТАРИИ РАЗРАБ ПОЛНЫЙ Р...
-                #90 https://www.youtube.com/watch?v=ECqnqxDrM2Q 29.11.2024 ❌ [СТРИМ] ИГРЫ + УЛУЧШЕНИЕ HALF-LIFE 2 ( ПОКАЗЫВАЮ)
-                #91 https://www.youtube.com/watch?v=9G6wI1s-w2Q 30.11.2024 ❌ [СТРИМ] НЕУЖЕЛИ ПРИШЛО ТО САМОЕ ВРЕМЯ?
-                #92 https://www.youtube.com/watch?v=_Q6dIcpy0rA 06.12.2024 ❌ [СТРИМ] БУДНИЧНАЯ ПАЛЕОНТОЛОГИЯ (ИГРЫТВАРЬ)
-                #93 https://www.youtube.com/watch?v=VF85gG7Atbk 07.12.2024 ❌ [СТРИМ] ЗАПУСК НОВОГОДНИХ ИГРЫ ЧЕРЕЗ 2 МИНУТЫ....
-                #94 https://www.youtube.com/watch?v=pwKalXt4LSg 13.12.2024 ❌ [СТРИМ] ИГРЫ ДЛЯ ДЕТЕЙ (18+)
-                #95 https://www.youtube.com/watch?v=doXltk63AE8 31.12.2024 ❌ [СТРИМ] ПОСТРОИМ НОВУЮ БАЗУ БОСС (НОВОГОДНИЕ ИГРЫ)
-            `;
-    
+    const streamsData = `
+    #1 https://www.youtube.com/watch?v=kyHmidcOINE 06.01.2024 [СТРИМ] СМОТРИМ ВИДЕО
+    #2 https://www.youtube.com/watch?v=sAnJ1rS9QfI 07.01.2024 [СТРИМ] СМОТРИМ ВИДЕО АПЯТ
+    #3 https://www.youtube.com/watch?v=4bGhymJq42g 13.01.2024 [СТРИМ] ОРБИТАЛЬНЫЙ КОЛЛАПС - VR ИГРЫ
+    #4 https://www.youtube.com/watch?v=iS7nP_xstXQ 14.01.2024 [СТРИМ] ВИДЕО И ИГРЫ VR (АТКАЧУПА)
+    #5 https://www.youtube.com/watch?v=vgrNx-MQB4Q 20.01.2024 [СТРИМ] ТОЛЬКО УЖАСЫ (НАДЕЮСЬ)
+    #6 https://www.youtube.com/watch?v=KwpPOXvRpTE 21.01.2024 [СТРИМ] VR ИГРЫ ЭПИЧЕСКИЕ (ХОРОШИЕ)
+    #7 https://www.youtube.com/watch?v=rOuxQBHBRLE 27.01.2024 [СТРИМ] СМОТРИМ ВИДЕО
+    #8 https://www.youtube.com/watch?v=bMLB9Ojnb1E 28.01.2024 [СТРИМ] HALF-LIFE ALYX VR - С УЛУЧШЕНИЯМИ (ULRTA HARDCORE)
+    #9 https://www.youtube.com/watch?v=rfnYmYFLQsI 03.02.2024 [СТРИМ] СТРАШИЛКИ В ВИАРЕ
+    #10 https://www.youtube.com/watch?v=ixw_SZt0tUc 04.02.2024 [СТРИМ] СМОТРИМ ФИЛЬМ ПО HALF-LIFE
+    #11 https://www.youtube.com/watch?v=0gVoXtAi4wk 11.02.2024 [СТРИМ] СМОТРЮ ВИДЕО
+    #12 https://www.youtube.com/watch?v=iJHzhDwHHdo 17.02.2024 [СТРИМ] СМОТРЮ ВИДЕО
+    #13 https://www.youtube.com/watch?v=isdulKkVpsU 18.02.2024 [СТРИМ] УЖАСЫ. ПРЕСТУПЛЕНИЯ. - СМОТРИМ ВИДЕО
+    #14 https://www.youtube.com/watch?v=MvzajJV0blo 24.02.2024 [СТРИМ] ВИДЕО НА ОБРАЗОВАТЕЛЬНЫЕ ТЕМЫ
+    #15 https://www.youtube.com/watch?v=QUcuxB1ob2M 25.02.2024 [СТРИМ] Raising the Bar: Redux + SALVATION
+    #16 https://www.youtube.com/watch?v=aTAg95XmwsI 02.03.2024 [СТРИМ] СМОТРИМ ВИДЕО
+    #17 https://www.youtube.com/watch?v=7tFOQ8Ej3xw 03.03.2024 [СТРИМ] СМОТРИМ ВИДЕО 2
+    #18 https://www.youtube.com/watch?v=Axx8ATCYm1Q 09.03.2024 [СТРИМ] СМОТРЮ СТАРЫЕ ВИДЕО
+    #19 https://www.youtube.com/watch?v=6e2kklFUOLo 10.03.2024 [СТРИМ] СМОТРИМ ВИДЕО (СПАСМИБА)
+    #20 https://www.youtube.com/watch?v=K-i-rMUdZqs 16.03.2024 [СТРИМ] =СМОТРИМ ВИДЕО= =ДА ДА, НЕ УДИВЛЯЙТЕСЬ=
+    #21 https://www.youtube.com/watch?v=0AfA-0N5DEk 23.03.2024 [СТРИМ] СМОТРИМ ВИДЕО
+    #22 https://www.youtube.com/watch?v=KlI_TcWnwvw 24.03.2024 [СТРИМ] СМОТРИМ ВИДЕО (А ПОТОМ ИГРА БДЕТЬ)))))))))))
+    #23 https://www.youtube.com/watch?v=3RWxxPbHyu8 30.03.2024 [СТРИМ] СМОТРИМ ВИДЕО +SILENT HILL 2 VR (CLOWNEDITION)
+    #24 https://www.youtube.com/watch?v=ZPKeD_BHKQc 31.03.2024 [СТРИМ] СМОТРИМ ВИДЕО + INTO RHE RADIDSAS
+    #25 https://www.youtube.com/watch?v=I9LrpGEgURc 06.04.2024 [СТРИМ] СМОТРИМ ВИДЕО + SILENT HILL BETA (PS2) 1999
+    #26 https://www.youtube.com/watch?v=woSEg6koH4E 07.04.2024 [СТРИМ] СМОТРИМ ВИДЕО (МАЛО) + SILENT HILL BETA (PS2) 1999
+    #27 https://www.youtube.com/watch?v=tthmF2c5Khc 13.04.2024 [СТРИМ] СМОТРИМ ВИДЕО + SILENT HILL 1 BETA (PS2) (я прошел пианино)
+    #28 https://www.youtube.com/watch?v=RWT2gN7oRF0 14.04.2024 [СТРИМ] СМОТРИМ ВИДЕО + SILENT HILL 1 BETA
+    #29 https://www.youtube.com/watch?v=nomfIQJqqrk 20.04.2024 [СТРИМ] СМОТРИМ ВИДЕО + SILENT HILL АДИН
+    #30 https://www.youtube.com/watch?v=-wOV2zOfmOo 21.04.2024 [СТРИМ] СМОТРИМ ВИДЕО + HALF-LIFE ALYX VR
+    #31 https://www.youtube.com/watch?v=KaM5jbEO4tY 27.04.2024 [СТРИМ] СМОТРИМ ВИДЕО + SILENT HILL 1
+    #32 https://www.youtube.com/watch?v=6X8GJeCmDFE 28.04.2024 [СТРИМ] СМОТРИМ ВИДЕО + HALF-LIFE ALYX (БЕЗ ТРЯСКИ)
+    #33 https://www.youtube.com/watch?v=Cg0PHdbssHw 04.05.2024 [СТРИМ] СМОТРИМ ВИДЕО НЕСМОТРИБЕЛЬНОГО ХАРАКТЕРА
+    #34 https://www.youtube.com/watch?v=MgKxzlr6NBw 11.05.2024 [СТРИМ] СМОТРИМ ВИДЕО УЖАС + SILENT HILL 1
+    #35 https://www.youtube.com/watch?v=sEEIHaGRtJQ 18.05.2024 [СТРИМ] СМОТРИМ ВИДЕО ЛУЧШИЕ
+    #36 https://www.youtube.com/watch?v=LqWt73b9QIo 19.05.2024 [СТРИМ] HALF-LIFE ALYX + ВИДЕО
+    #37 https://www.youtube.com/watch?v=wHFeVcucu70 25.05.2024 [СТРИМ] ВИДЕО СМОТРИМ И ИГРЫ SILENT HILL ИГРАЕМ
+    #38 https://www.youtube.com/watch?v=yFWFgGjHdzA 26.05.2024 [СТРИМ] SILENT HILL + HALF-LIFE ALYX
+    #39 https://www.youtube.com/watch?v=hvM6HQoUIrw 01.06.2024 [СТРИМ] SILENT HILL + HLA ФИНАЛЫ - ПОТОМ СМОТРИМ ВИДЕО
+    #40 https://www.youtube.com/watch?v=Xl1SHJX4TM8 08.06.2024 [СТРИМ] Summer Game Fest 2024 (00:00) + МОЖЕТ БЫТЬ ЧТО ТО ОСТАЛЬНОЕ...
+    #41 https://www.youtube.com/watch?v=quzA6mAipEM 08.06.2024 [СТРИМ] Future of Play Direct (18:00) + The Future Games Show (22:0...
+    #42 https://www.youtube.com/watch?v=2t-VHckHvZA 09.06.2024 [СТРИМ] Xbox Games Showcase (20:00) + PC Gaming Show 2024 (23:00)
+    #43 https://www.youtube.com/watch?v=b8JABZcqvV8 15.06.2024 [СТРИМ] СМОТРИМ ВИДЕО
+    #44 https://www.youtube.com/watch?v=QPqiWLJ6vTs 16.06.2024 [СТРИМ] СМОТРИМ ВИДЕО (ТОЛЬКО МАТ)
+    #45 https://www.youtube.com/watch?v=r6LY94dQSFc 21.06.2024 [СТРИМ] СМОТРИМ ВИДЕО (ИГРАЕМ ЕСЛИ ЗАСТАВИТЕ)
+    #46 https://www.youtube.com/watch?v=D02HEfTFg6I 22.06.2024 [СТРИМ] СМОТРИМ ВИДЕО (ИГРАЕМ???) (РОЗЫГРЫШ ДИСКОВ)
+    #47 https://www.youtube.com/watch?v=bLXUmgXXJnw 23.06.2024 [СТРИМ] ТОЛКА АУЖАСИ И СТРАШИЛКЕ
+    #48 https://www.youtube.com/watch?v=AMpKiNBtMhY 28.06.2024 [СТРИМ] СМОТРИМ СТРАШНЫЕ ВИДЕО
+    #49 https://www.youtube.com/watch?v=2wicbM4VXLk 29.06.2024 [СТРИМ] СМОТРИМ СТРАШНЫЕ ВИДЕО
+    #50 https://www.youtube.com/watch?v=bogvPBdNPys 29.06.2024 [СТРИМ] СМОТРИМ ВИДЕО ВАШИ
+    #51 https://www.youtube.com/watch?v=tlgcmG5J7Is 05.07.2024 [СТРИМ] НАКАНЕЦТА НОВЫЕ ВИДЕО ЖЕКСАН (СТРАШЫНЕ)
+    #52 https://www.youtube.com/watch?v=PorgUet6_4w 05.07.2024 [СТРИМ] СТРАШЫНЕ ВИДЕО НАСТЯ ЖДАКСАН
+    #53 https://www.youtube.com/watch?v=TTBlA3cKIhw 06.07.2024 [СТРИМ] УЖАСАЮЩИЕ ВИДЕО ОНЛУ АНАЛИТИКА
+    #54 https://www.youtube.com/watch?v=UgZAF2BITz0 07.07.2024 [СТРИМ] HALF-LIFE 2 EP2 VR - FINAL + SILENT HILL ZERO
+    #55 https://www.youtube.com/watch?v=yzA1jZn--1w 12.07.2024 [СТРИМ] СМОТРИМ ОМЕРЗИТЕЛЬНЫЕ ВИДЕО
+    #56 https://www.youtube.com/watch?v=7eAJz93ZHos 13.07.2024 [СТРИМ] СМОТРИМ ВИДЕО (ЛУЧШИЕ)
+    #57 https://www.youtube.com/watch?v=d4UTtQkvLx8 14.07.2024 [СТРИМ] СЕКРЕТНАЯ СЛУЖБА
+    #58 https://www.youtube.com/watch?v=XAau9QLegOk 19.07.2024 [СТРИМ] СТРАШНЫЕ ВИДЕО + АУКЦИОН НА ФИЛЬМ
+    #59 https://www.youtube.com/watch?v=XWwoBFJgvK4 28.07.2024 [СТРИМ] ПОЛЕ ЧУДЕС ,РАУЛЬ,РАМЗЕС - ВИДОС
+    #60 https://www.youtube.com/watch?v=G_QWHDrfYRQ 29.07.2024 [СТРИМ] В ОЧКЕ ТВОРИТЬСЯ АДСКИЙ ЗАМЕС
+    #61 https://www.youtube.com/watch?v=Go1Dc1DMB68 02.08.2024 [СТРИМ] ПЫТАЮСЬ СМОТРЕТЬ СТРАШИЛКИ
+    #62 https://www.youtube.com/watch?v=TCAcD-qtkdI 03.08.2024 [СТРИМ] КОРОТКОМЕТРАЖНЫЕ ФИЛЬМЫ УЖАСОВ + ВЫБИРАЕМ ФИЛЬМ
+    #63 https://www.youtube.com/watch?v=lTCIn4ezpvk 09.08.2024 [СТРИМ] СТРАШНЫЕ ИГРЫ + ЧТО МЫ ДЕЛАЕМ В ТЕНИ (НА ТВИЧЕ)
+    #64 https://www.youtube.com/watch?v=r407EQzdRtE 10.08.2024 [СТРИМ] СМОТРИ ВИДЕО
+    #65 https://www.youtube.com/watch?v=OO4gHkS4cBU 11.08.2024 [СТРИМ] ИГРАЮ ИЛИ СМОТРЮ Непоня́тно
+    #66 https://www.youtube.com/watch?v=vNKMriWBq0M 16.08.2024 [СТРИМ] ИГРАЕМ И СМОТРИМ ВИДЕО
+    #67 https://www.youtube.com/watch?v=XDjcPZCfduA 17.08.2024 [СТРИМ] ХОРРОР ИГРЫ - SUPERNATURAL MEDIUM VLADIC SASAL FORBIDEN SI...
+    #68 https://www.youtube.com/watch?v=L9yg-ZJDS_g 24.08.2024 [СТРИМ] СМОТРИМ ИГРЫ И ИГРАЕМ В ВИДЕО
+    #69 https://www.youtube.com/watch?v=qjstZOriaxA 25.08.2024 [СТРИМ] СМОТРИМ ВИДЕО ИГРЫ
+    #70 https://www.youtube.com/watch?v=ETMcB6o1FTE 31.08.2024 [СТРИМ] СМОТРИМ ВИДЕО (ИГРЫ ЭСИ ЗАСТАВИТЕ(
+    #71 https://www.youtube.com/watch?v=GGx52vvV6wU 01.09.2024 [СТРИМ] СМОТРИМ ВИДЕО И ТОЛЬКО (СТРАШНЫЕ)
+    #72 https://www.youtube.com/watch?v=Hz-UDnMN6L0 05.09.2024 [СТРИМ] СТРИМ SPACE MARINE 2
+    #73 https://www.youtube.com/watch?v=KD3ZQVE0eSg 08.09.2024 [СТРИМ] РУССКИЕ СТРАШИЛКИ
+    #74 https://www.youtube.com/watch?v=CJTG5-swik4 14.09.2024 [СТРИМ] ПРЕКРАСНОЕ УТРО В ГОРАХ ТЯНЬ-ШАНЬ
+    #75 https://www.youtube.com/watch?v=Z0oTBn3uLNA 21.09.2024 [СТРИМ] ЗАМЕЧАТЕЛЬНЫЙ ВЕЧЕР ВОЗЛЕ СОБАЧЬЕЙ БУДКИ
+    #76 https://www.youtube.com/watch?v=fB5jXO4tYgw 27.09.2024 [СТРИМ] ВОЛШЕБНАЯ ПЬЯНКА ГОБЛИНОВ В СОРТИРЕ
+    #77 https://www.youtube.com/watch?v=EBt7g87geO8 28.09.2024 [СТРИМ] ДЕНЬ КОГДА БАНКИ НИКТО НЕ ПОДНИМАЛ
+    #78 https://www.youtube.com/watch?v=jfAzuxOS9QU 05.10.2024 [СТРИМ] ЗДЕСЬ КОГДА-ТО БЫЛА ДЫРА
+    #79 https://www.youtube.com/watch?v=aFZ4XgJeHhI 06.10.2024 [СТРИМ] SILENT HILL 2 РЕМЕЙК - ИГРАЕТ ПИ ДИДИ
+    #80 https://www.youtube.com/watch?v=AaCys-NOdHk 12.10.2024 [СТРИМ] SILENT HILL 2 РЕМЕЙК - НА ХАРДЕ ДЕТАЛЬНОЕ ПРОХОЖДЕНИЕ СКА
+    #81 https://www.youtube.com/watch?v=RiujN45UiUE 13.10.2024 [СТРИМ] SILENT HILL 2 РЕМЕЙК - НА ХАРДЕ ВСЕ ПАСХАЛКИ ОТ ВАДАЛЕЯ
+    #82 https://www.youtube.com/watch?v=Hh-y-dnApnE 19.10.2024 [СТРИМ] SILENT HILL 2 РЕМЕЙК - ДЖЕЙМС САНДЕРЛЕНД НИКОГО НЕ УБИВАЛ
+    #83 https://www.youtube.com/watch?v=USzuFSgv5HU 20.10.2024 [СТРИМ] SILENT HILL 2 РЕМЕЙК - БЕЗ СМЕРТЕЙ ХАРД (ЗАГАДКИ ТОЖЕ)
+    #84 https://www.youtube.com/watch?v=Lw-0_uQBwuo 02.11.2024 [СТРИМ] SILENT HILL 2 РЕМЕЙК - ПО ФАСТУ ДО КОНЦА
+    #85 https://www.youtube.com/watch?v=unFvJCDjDMU 03.11.2024 [СТРИМ] IM NOT A HUMAN + SILENT HILL 2 - 6-ОЙ ЧАС НА ПЕРВОМ УРОВНЕ
+    #86 https://www.youtube.com/watch?v=n0xKt977Xek 09.11.2024 [СТРИМ] Я ИДУ ДО КОНЦА ( ПОПРОБУЮ))
+    #87 https://www.youtube.com/watch?v=7uo-aUK8mqM 10.11.2024 [СТРИМ] ПЯТЬ КОРЕЙСКИХ КРАСОТОК + СУПЕР СЕДЮСЕР + ЕЩЕ ТАМ МНОГО КРУ...
+    #88 https://www.youtube.com/watch?v=oxFA3WXHLRM 11.11.2024 [СТРИМ] PROJECT BOREALIS DEMO - ИВ СЁ НА ПОЛ ЧАСА
+    #89 https://www.youtube.com/watch?v=Luox8NKiTc0 23.11.2024 [СТРИМ] МОЙ ОБЫЧНЫЙ СТРИМ ПО ИГРАМ (Hl2 КОММЕНТАРИИ РАЗРАБ ПОЛНЫЙ Р...
+    #90 https://www.youtube.com/watch?v=ECqnqxDrM2Q 29.11.2024 [СТРИМ] ИГРЫ + УЛУЧШЕНИЕ HALF-LIFE 2 ( ПОКАЗЫВАЮ)
+    #91 https://www.youtube.com/watch?v=9G6wI1s-w2Q 30.11.2024 [СТРИМ] НЕУЖЕЛИ ПРИШЛО ТО САМОЕ ВРЕМЯ?
+    #92 https://www.youtube.com/watch?v=_Q6dIcpy0rA 06.12.2024 [СТРИМ] БУДНИЧНАЯ ПАЛЕОНТОЛОГИЯ (ИГРЫТВАРЬ)
+    #93 https://www.youtube.com/watch?v=VF85gG7Atbk 07.12.2024 [СТРИМ] ЗАПУСК НОВОГОДНИХ ИГРЫ ЧЕРЕЗ 2 МИНУТЫ....
+    #94 https://www.youtube.com/watch?v=pwKalXt4LSg 13.12.2024 [СТРИМ] ИГРЫ ДЛЯ ДЕТЕЙ (18+)
+    #95 https://www.youtube.com/watch?v=doXltk63AE8 31.12.2024 [СТРИМ] ПОСТРОИМ НОВУЮ БАЗУ БОСС (НОВОГОДНИЕ ИГРЫ)
+    `;
+
     let allStreams = [], currentFilter = 'all', currentSearch = '';
     const emojiContainer = document.getElementById('emoji-container'), activeEmojis = [];
     let emojiInterval = null, lastAnimationFrame = null;
-    
-    // Счетчики
+
     function countStreams() {
         const available = allStreams.filter(s => s.status === 'available').length;
         const unavailable = allStreams.filter(s => s.status === 'unavailable').length;
         return { available, unavailable };
     }
-    
+
     function addCountersToFilters() {
         const counts = countStreams();
         const filterButtons = document.querySelectorAll('.filter-btn');
         
-        const style = document.createElement('style');
-        style.textContent = `.filter-btn{position:relative;padding-top:28px}
-.filter-count{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:14px;font-weight:700;z-index:10;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:12px;padding:0 8px;white-space:nowrap;transition:all .3s}
-.filter-btn[data-filter="all"] .filter-count{background:var(--all-color);color:#fff;box-shadow:0 0 10px rgba(255,126,51,.5)}
-.filter-btn[data-filter="available"] .filter-count{background:var(--success);color:#003311;box-shadow:0 0 10px rgba(77,255,122,.5)}
-.filter-btn[data-filter="unavailable"] .filter-count{background:var(--error);color:#fff;box-shadow:0 0 10px rgba(255,77,77,.5)}
-@media(max-width:768px){.filter-count{font-size:12px;min-width:20px;height:20px;border-radius:10px}.filter-btn{padding-top:24px}}`;
-        document.head.appendChild(style);
-        
         filterButtons.forEach(btn => {
+            const old = btn.querySelector('.filter-count');
+            if (old) old.remove();
+            
             let count = 0;
             const type = btn.dataset.filter;
             if (type === 'all') count = allStreams.length;
@@ -536,38 +515,62 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.appendChild(countEl);
         });
     }
-    
-    // Парсинг данных
+
     const lines = streamsData.split('\n');
     lines.forEach(line => {
         line = line.trim();
         if (!line) return;
         
-        const parts = line.split(/\s+/);
-        if (parts.length >= 4) {
-            const videoIdMatch = parts[1].match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+        const match = line.match(/^#(\d+)\s+(https?:\/\/\S+)\s+(\d{2}\.\d{2}\.\d{4})\s+(.*)$/);
+        if (match) {
+            const videoUrl = match[2];
+            const videoIdMatch = videoUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+            
             allStreams.push({
-                number: parts[0].substring(1),
-                url: parts[1],
-                date: parts[2],
-                status: parts[3] === '✅' ? 'available' : 'unavailable',
-                statusIcon: parts[3],
+                number: match[1],
+                url: videoUrl,
+                date: match[3],
                 videoId: videoIdMatch ? videoIdMatch[1] : '',
-                title: parts.slice(4).join(' ')
+                title: match[4],
+                status: 'checking',
+                statusIcon: '⏳'
             });
         }
     });
-    
-    addCountersToFilters();
-    
-    // Эмодзи
+
+    async function checkStreamStatus(stream) {
+        if (!stream.videoId) {
+            stream.status = 'unavailable';
+            stream.statusIcon = '❌';
+            return;
+        }
+        try {
+            const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${stream.videoId}&format=json`);
+            if (res.ok) {
+                stream.status = 'available';
+                stream.statusIcon = '✅';
+            } else {
+                stream.status = 'unavailable';
+                stream.statusIcon = '❌';
+            }
+        } catch (e) {
+            stream.status = 'unavailable';
+            stream.statusIcon = '❌';
+        }
+    }
+
+    async function checkAllStreams() {
+        await Promise.all(allStreams.map(stream => checkStreamStatus(stream)));
+        addCountersToFilters();
+        renderStreams();
+    }
+
     function getRandomEmoji() {
         return `emoji/emoji${Math.floor(Math.random() * 50)}.webp`;
     }
-    
+
     function createFallingEmoji() {
         if (document.hidden) return;
-        
         const emoji = document.createElement('div');
         emoji.className = 'falling-emoji';
         emoji.style.backgroundImage = `url('${getRandomEmoji()}')`;
@@ -578,19 +581,12 @@ document.addEventListener('DOMContentLoaded', function() {
         emoji.style.width = `${size}px`;
         emoji.style.height = `${size}px`;
         emojiContainer.appendChild(emoji);
-        
-        const emojiData = {
-            element: emoji,
-            speed: 0.5 + Math.random() * 2.5,
-            position: -30,
-            removed: false
-        };
+        const emojiData = { element: emoji, speed: 0.5 + Math.random() * 2.5, position: -30, removed: false };
         activeEmojis.push(emojiData);
-        
         if (!lastAnimationFrame) animateEmojis();
         setTimeout(() => { if (!emojiData.removed) removeEmoji(emojiData); }, 10000);
     }
-    
+
     function animateEmojis() {
         for (let i = activeEmojis.length - 1; i >= 0; i--) {
             const emoji = activeEmojis[i];
@@ -605,25 +601,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if (activeEmojis.length > 0) lastAnimationFrame = requestAnimationFrame(animateEmojis);
         else lastAnimationFrame = null;
     }
-    
+
     function removeEmoji(emoji) {
         if (emoji.removed) return;
         emoji.removed = true;
         if (emoji.element.parentNode) emoji.element.parentNode.removeChild(emoji.element);
     }
-    
+
     function startEmojiSystem() {
         if (emojiInterval) clearInterval(emojiInterval);
         emojiInterval = setInterval(createFallingEmoji, 700 + Math.random() * 300);
-        
         activeEmojis.forEach(emoji => removeEmoji(emoji));
         activeEmojis.length = 0;
-        
-        setTimeout(() => { 
-            for (let i = 0; i < 5; i++) setTimeout(createFallingEmoji, i * 200); 
-        }, 1000);
+        setTimeout(() => { for (let i = 0; i < 5; i++) setTimeout(createFallingEmoji, i * 200); }, 1000);
     }
-    
+
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             if (emojiInterval) clearInterval(emojiInterval);
@@ -636,16 +628,23 @@ document.addEventListener('DOMContentLoaded', function() {
             startEmojiSystem();
         }
     });
-    
+
     startEmojiSystem();
-    
-    function initSearch() {
-        document.getElementById('searchInput').addEventListener('input', function() {
-            currentSearch = this.value.toLowerCase().trim();
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+        currentSearch = this.value.toLowerCase().trim();
+        renderStreams();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            currentFilter = this.dataset.filter;
             renderStreams();
         });
-    }
-    
+    });
+
     function renderStreams() {
         const streamsContainer = document.getElementById('streamsContainer');
         streamsContainer.innerHTML = '';
@@ -668,35 +667,47 @@ document.addEventListener('DOMContentLoaded', function() {
             const card = document.createElement('div');
             card.className = `stream-card ${stream.status}`;
             card.style.animationDelay = `${0.2 + index * 0.1}s`;
+            
+            let statusText = 'Проверка...';
+            let statusClass = 'status-checking';
+            if (stream.status === 'available') {
+                statusText = 'Доступен';
+                statusClass = 'status-available';
+            } else if (stream.status === 'unavailable') {
+                statusText = 'Недоступен';
+                statusClass = 'status-unavailable';
+            }
+            
             card.innerHTML = `<div class="stream-number">#${stream.number}</div>
                 <div class="stream-thumbnail" style="background-image:url('https://img.youtube.com/vi/${stream.videoId}/mqdefault.jpg')"></div>
                 <div class="stream-info">
                     <div class="stream-title">${stream.title || 'Название недоступно'}</div>
                     <div class="stream-date">${stream.date}</div>
                     <div class="stream-status">
-                        <span class="status-icon ${stream.status === 'available' ? 'status-available' : 'status-unavailable'}">${stream.statusIcon}</span>
-                        <span>${stream.status === 'available' ? 'Доступен' : 'Недоступен'}</span>
+                        <span class="status-icon ${statusClass}">${stream.statusIcon}</span>
+                        <span>${statusText}</span>
                     </div>
                 </div>
                 <a href="${stream.url}" class="stream-link" target="_blank"></a>`;
             streamsContainer.appendChild(card);
         });
     }
-    
-    function initFilters() {
-        document.querySelectorAll('.filter-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-                currentFilter = this.dataset.filter;
-                renderStreams();
-            });
-        });
-    }
-    
+
+    const style = document.createElement('style');
+    style.textContent = `
+        .filter-btn{position:relative;padding-top:28px}
+        .filter-count{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:14px;font-weight:700;z-index:10;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:12px;padding:0 8px;white-space:nowrap;transition:all .3s}
+        .filter-btn[data-filter="all"] .filter-count{background:var(--all-color);color:#fff;box-shadow:0 0 10px rgba(255,126,51,.5)}
+        .filter-btn[data-filter="available"] .filter-count{background:var(--success);color:#003311;box-shadow:0 0 10px rgba(77,255,122,.5)}
+        .filter-btn[data-filter="unavailable"] .filter-count{background:var(--error);color:#fff;box-shadow:0 0 10px rgba(255,77,77,.5)}
+        @media(max-width:768px){.filter-count{font-size:12px;min-width:20px;height:20px;border-radius:10px}.filter-btn{padding-top:24px}}
+    `;
+    document.head.appendChild(style);
+
+    addCountersToFilters();
     renderStreams();
-    initSearch();
-    initFilters();
+    checkAllStreams();
 });
 </script>
-
+</body>
+</html>
