@@ -256,7 +256,7 @@
             font-size: 2.5rem;
         }
         
-        /* Стили для счетчиков: сделаны компактнее */
+        /* Компактные счетчики */
         .year-counters {
             position: absolute;
             bottom: 10px;
@@ -301,6 +301,7 @@
         }
         .counter.total .counter-number { background: var(--all-color); color: #fff; }
         .counter.available .counter-number { background: var(--success); color: #003311; }
+        .counter.unavailable .counter-number { background: var(--error); color: #fff; }
         
         .particles {
             position: absolute;
@@ -872,12 +873,12 @@
 <script>
     (function(){
         const yearsData = [
-            { year: 2022, total: '...', available: '...', all: false },
-            { year: 2023, total: '...', available: '...', all: false },
-            { year: 2024, total: '...', available: '...', all: false },
-            { year: 2025, total: '...', available: '...', all: false },
-            { year: 2026, total: '...', available: '...', all: false },
-            { year: 0, total: '...', available: '...', all: true }
+            { year: 2022, total: '...', available: '...', unavailable: '...', all: false },
+            { year: 2023, total: '...', available: '...', unavailable: '...', all: false },
+            { year: 2024, total: '...', available: '...', unavailable: '...', all: false },
+            { year: 2025, total: '...', available: '...', unavailable: '...', all: false },
+            { year: 2026, total: '...', available: '...', unavailable: '...', all: false },
+            { year: 0, total: '...', available: '...', unavailable: '...', all: true }
         ];
         
         const mediaFiles = [
@@ -1130,6 +1131,7 @@
                     <div class="year-counters">
                         <div class="counter total" title="Всего стримов"><div class="counter-number">${data.total}</div><div class="counter-label">Всего</div></div>
                         <div class="counter available" title="Доступных"><div class="counter-number">${data.available}</div><div class="counter-label">Доступно</div></div>
+                        <div class="counter unavailable" title="Недоступных"><div class="counter-number">${data.unavailable}</div><div class="counter-label">Недоступно</div></div>
                     </div>
                 `;
                 yearsGrid.appendChild(card);
@@ -1162,25 +1164,24 @@
 
         async function updateDynamicCounters() {
             const years = [2022, 2023, 2024, 2025, 2026];
-            const newYearsData = years.map(y => ({ year: y, total: 0, available: 0 }));
-            const allData = { year: 0, total: 0, available: 0, all: true };
+            const newYearsData = years.map(y => ({ year: y, total: 0, available: 0, unavailable: 0 }));
+            const allData = { year: 0, total: 0, available: 0, unavailable: 0, all: true };
             const allVideos = [];
 
             try {
                 const fetchPromises = years.map(y => fetch(`${y}.html`).then(res => {
-                    if (!res.ok) return ''; // Если файла нет, возвращаем пустую строку
+                    if (!res.ok) return ''; 
                     return res.text();
                 }).catch(() => ''));
                 
                 const texts = await Promise.all(fetchPromises);
 
-                // Более надежная регулярка: ищет просто любые ссылки на YouTube в тексте
                 const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
 
                 texts.forEach((text, index) => {
                     const year = years[index];
                     const matches = text.match(regex) || [];
-                    const uniqueMatches = [...new Set(matches)]; // Убираем дубликаты
+                    const uniqueMatches = [...new Set(matches)];
 
                     uniqueMatches.forEach(url => {
                         const videoIdMatch = url.match(/([a-zA-Z0-9_-]{11})$/);
@@ -1193,21 +1194,21 @@
                     });
                 });
 
-                // Мгновенно обновляем "Всего"
                 yearsData.forEach(d => {
                     if (d.all) {
                         d.total = allData.total;
                         d.available = '...';
+                        d.unavailable = '...';
                     } else {
                         const nd = newYearsData.find(x => x.year === d.year);
                         d.total = nd.total;
                         d.available = '...';
+                        d.unavailable = '...';
                     }
                 });
                 
                 updateDOMCounters(yearsData);
 
-                // Начинаем проверять статусы (с кэшем)
                 let processed = 0;
                 const checkPromises = allVideos.map(async (v) => {
                     const cacheKey = `yt_status_${v.videoId}`;
@@ -1237,17 +1238,22 @@
                         const yd = newYearsData.find(d => d.year === v.year);
                         if (yd) yd.available++;
                         allData.available++;
+                    } else {
+                        const yd = newYearsData.find(d => d.year === v.year);
+                        if (yd) yd.unavailable++;
+                        allData.unavailable++;
                     }
                     processed++;
 
-                    // Обновляем визуал каждые 5 видео или в самом конце
                     if (processed % 5 === 0 || processed === allVideos.length) {
                         yearsData.forEach(d => {
                             if (d.all) {
                                 d.available = allData.available;
+                                d.unavailable = allData.unavailable;
                             } else {
                                 const nd = newYearsData.find(x => x.year === d.year);
                                 d.available = nd.available;
+                                d.unavailable = nd.unavailable;
                             }
                         });
                         updateDOMCounters(yearsData);
@@ -1267,8 +1273,10 @@
                 if (d) {
                     const totalEl = card.querySelector('.counter.total .counter-number');
                     const availEl = card.querySelector('.counter.available .counter-number');
+                    const unavailEl = card.querySelector('.counter.unavailable .counter-number');
                     if(totalEl) totalEl.textContent = d.total;
                     if(availEl) availEl.textContent = d.available;
+                    if(unavailEl) unavailEl.textContent = d.unavailable;
                 }
             });
         }
