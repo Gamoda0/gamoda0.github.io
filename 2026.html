@@ -226,7 +226,7 @@
         
         .stream-info {
             padding: 1.2rem;
-            position: relative;
+            position: relative; /* Важно для позиционирования иконки */
         }
         
         .stream-number {
@@ -250,6 +250,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
+            padding-right: 50px; /* Отступ, чтобы текст не залезал под иконку */
         }
         
         .stream-date {
@@ -258,14 +259,6 @@
             margin-bottom: 0.5rem;
         }
         
-        /* Ряд со статусом и иконкой YouTube */
-        .stream-bottom-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 0.5rem;
-        }
-
         .stream-status {
             display: flex;
             align-items: center;
@@ -299,10 +292,14 @@
             cursor: pointer;
         }
 
-        /* Иконка YouTube справа от статуса */
+        /* Иконка YouTube: шире, выше (по центру) и справа */
         .yt-icon-link {
-            width: 24px;
-            height: 24px;
+            position: absolute;
+            right: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
             cursor: pointer;
             z-index: 10;
             transition: transform 0.2s ease, filter 0.2s ease;
@@ -310,8 +307,8 @@
         }
 
         .yt-icon-link:hover {
-            transform: scale(1.2);
-            filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.6));
+            transform: translateY(-50%) scale(1.15);
+            filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.6));
         }
         
         .loading {
@@ -785,13 +782,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="stream-info">
                     <div class="stream-title">${stream.title || 'Название недоступно'}</div>
                     <div class="stream-date">${stream.date}</div>
-                    <div class="stream-bottom-row">
-                        <div class="stream-status">
-                            <span class="status-icon ${statusClass}">${stream.statusIcon}</span>
-                            <span>${statusText}</span>
-                        </div>
-                        <img src="assets/avatars/youtube.webp" class="yt-icon-link" alt="YouTube" title="Открыть на YouTube">
+                    <div class="stream-status">
+                        <span class="status-icon ${statusClass}">${stream.statusIcon}</span>
+                        <span>${statusText}</span>
                     </div>
+                    <img src="assets/avatars/youtube.webp" class="yt-icon-link" alt="YouTube" title="Открыть на YouTube">
                 </div>
                 <a href="${stream.url}" class="stream-link"></a>`;
             
