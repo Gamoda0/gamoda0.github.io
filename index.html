@@ -874,13 +874,14 @@
 <script>
     (function(){
         const yearsData = [
-            { year: 2022, total: 40, available: 0, unavailable: 40 },
-            { year: 2023, total: 84, available: 0, unavailable: 84 },
-            { year: 2024, total: 95, available: 2, unavailable: 93 },
-            { year: 2025, total: 87, available: 1, unavailable: 86 },
-            { year: 2026, total: 45, available: 30, unavailable: 15 },
-            { year: 0, total: 351, available: 33, unavailable: 318, all: true }
+            { year: 2022, total: '...', available: '...', unavailable: '...' },
+            { year: 2023, total: '...', available: '...', unavailable: '...' },
+            { year: 2024, total: '...', available: '...', unavailable: '...' },
+            { year: 2025, total: '...', available: '...', unavailable: '...' },
+            { year: 2026, total: '...', available: '...', unavailable: '...' },
+            { year: 0, total: '...', available: '...', unavailable: '...', all: true }
         ];
+        
         const mediaFiles = [
             { type: 'video', url: 'assets/vid/1v_stoyak.webm', caption: 'Стоякоуский' },
             { type: 'video', url: 'assets/vid/2v_buhailparasha.webm', caption: 'Бухаил Парашевич' },
@@ -1162,6 +1163,126 @@
             });
         }
 
+        async function updateDynamicCounters() {
+            const years = [2022, 2023, 2024, 2025, 2026];
+            const newYearsData = years.map(y => ({ year: y, total: 0, available: 0, unavailable: 0 }));
+            const allData = { year: 0, total: 0, available: 0, unavailable: 0, all: true };
+            const allVideos = [];
+
+            try {
+                const fetchPromises = years.map(y => fetch(`${y}.html`).then(res => {
+                    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+                    return res.text();
+                }));
+                const texts = await Promise.all(fetchPromises);
+
+                const regex = /^#\d+\s+(https?:\/\/\S+)\s+(\d{2}\.\d{2}\.\d{4})\s+.*$/gm;
+
+                texts.forEach((text, index) => {
+                    const year = years[index];
+                    let match;
+                    while ((match = regex.exec(text)) !== null) {
+                        const url = match[1];
+                        const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+                        if (videoIdMatch) {
+                            allVideos.push({ year, videoId: videoIdMatch[1] });
+                            const yd = newYearsData.find(d => d.year === year);
+                            yd.total++;
+                            allData.total++;
+                        }
+                    }
+                });
+
+                // Update totals instantly
+                yearsData.forEach(d => {
+                    if (d.all) return;
+                    const nd = newYearsData.find(x => x.year === d.year);
+                    d.total = nd.total;
+                    d.available = '...';
+                    d.unavailable = '...';
+                });
+                yearsData.find(d => d.all).total = allData.total;
+                yearsData.find(d => d.all).available = '...';
+                yearsData.find(d => d.all).unavailable = '...';
+                
+                // Re-render just the numbers
+                document.querySelectorAll('.year-card').forEach(card => {
+                    const y = card.getAttribute('data-year');
+                    const d = y === 'all' ? yearsData.find(x => x.all) : yearsData.find(x => x.year === parseInt(y));
+                    if (d) {
+                        card.querySelector('.counter.total .counter-number').textContent = d.total;
+                        card.querySelector('.counter.available .counter-number').textContent = d.available;
+                        card.querySelector('.counter.unavailable .counter-number').textContent = d.unavailable;
+                    }
+                });
+
+                // Now check statuses
+                let processed = 0;
+                const checkPromises = allVideos.map(async (v) => {
+                    const cacheKey = `yt_status_${v.videoId}`;
+                    let isAvailable = false;
+                    const cached = localStorage.getItem(cacheKey);
+                    
+                    if (cached !== null) {
+                        const parsed = JSON.parse(cached);
+                        if (Date.now() - parsed.timestamp < 86400000) {
+                            isAvailable = parsed.isAvailable;
+                        } else {
+                            localStorage.removeItem(cacheKey);
+                        }
+                    }
+
+                    if (cached === null || Date.now() - JSON.parse(cached).timestamp >= 86400000) {
+                        try {
+                            const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${v.videoId}&format=json`);
+                            isAvailable = res.ok;
+                        } catch (e) {
+                            isAvailable = false;
+                        }
+                        localStorage.setItem(cacheKey, JSON.stringify({ isAvailable, timestamp: Date.now() }));
+                    }
+
+                    const yd = newYearsData.find(d => d.year === v.year);
+                    if (isAvailable) {
+                        if (yd) yd.available++;
+                        allData.available++;
+                    } else {
+                        if (yd) yd.unavailable++;
+                        allData.unavailable++;
+                    }
+                    processed++;
+
+                    if (processed % 5 === 0 || processed === allVideos.length) {
+                        yearsData.forEach(d => {
+                            if (d.all) return;
+                            const nd = newYearsData.find(x => x.year === d.year);
+                            d.available = nd.available;
+                            d.unavailable = nd.unavailable;
+                        });
+                        const ad = yearsData.find(d => d.all);
+                        ad.available = allData.available;
+                        ad.unavailable = allData.unavailable;
+
+                        document.querySelectorAll('.year-card').forEach(card => {
+                            const y = card.getAttribute('data-year');
+                            const d = y === 'all' ? ad : yearsData.find(x => x.year === parseInt(y));
+                            if (d) {
+                                card.querySelector('.counter.available .counter-number').textContent = d.available;
+                                card.querySelector('.counter.unavailable .counter-number').textContent = d.unavailable;
+                            }
+                        });
+                    }
+                });
+
+                await Promise.all(checkPromises);
+            } catch (error) {
+                console.error("Failed to load dynamic counters:", error);
+                document.querySelectorAll('.year-card').forEach(card => {
+                    card.querySelectorAll('.counter-number').forEach(el => el.textContent = 'Ошибка');
+                });
+            }
+        }
+
         function openMediaPlayer(media) {
             mediaPlayerDiv.innerHTML = '';
             const placeholder = document.createElement('div');
@@ -1380,6 +1501,7 @@
                 setTimeout(() => {
                     loaderScreen.style.display = 'none';
                     mainContent.style.display = 'block';
+                    updateDynamicCounters();
                 }, 500);
             }, 200);
             setInterval(changeFavicon, 3000);
