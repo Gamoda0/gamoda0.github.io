@@ -226,7 +226,7 @@
         
         .stream-info {
             padding: 1.2rem;
-            position: relative; /* Важно для позиционирования иконки */
+            position: relative;
         }
         
         .stream-number {
@@ -250,7 +250,8 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding-right: 50px; /* Отступ, чтобы текст не залезал под иконку */
+            padding-right: 45px; /* Отступ справа, чтобы текст не залезал под иконку */
+            min-height: 2.4rem;
         }
         
         .stream-date {
@@ -292,14 +293,13 @@
             cursor: pointer;
         }
 
-        /* Иконка YouTube: шире, выше (по центру) и справа */
+        /* Иконка YouTube теперь сверху справа, рядом с текстом */
         .yt-icon-link {
             position: absolute;
+            top: 1.2rem;
             right: 1.2rem;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             cursor: pointer;
             z-index: 10;
             transition: transform 0.2s ease, filter 0.2s ease;
@@ -307,8 +307,8 @@
         }
 
         .yt-icon-link:hover {
-            transform: translateY(-50%) scale(1.15);
-            filter: drop-shadow(0 0 10px rgba(255, 0, 0, 0.6));
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.6));
         }
         
         .loading {
