@@ -19,6 +19,7 @@
             --error: #ff4d4d;
             --success: #4dff7a;
             --all-color: #ff7e33;
+            --warning: #ffcc00;
         }
         
         * {
@@ -218,7 +219,7 @@
         .stream-thumbnail {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            padding-top: 56.25%;
             background-size: cover;
             background-position: center;
         }
@@ -275,6 +276,10 @@
             color: var(--error);
         }
         
+        .status-checking {
+            color: var(--warning);
+        }
+        
         .stream-link {
             position: absolute;
             top: 0;
@@ -304,7 +309,6 @@
             grid-column: 1 / -1;
         }
         
-        /* Falling emojis styles */
         .falling-emoji-container {
             position: fixed;
             top: 0;
@@ -325,24 +329,6 @@
             background-position: center;
             pointer-events: none;
             will-change: transform;
-        }
-        
-        /* Particles animation */
-        .particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-        
-        .particle {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 50%;
-            pointer-events: none;
         }
         
         @keyframes fadeIn {
@@ -401,79 +387,72 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-            const streamsData = `
-            #1 https://www.youtube.com/watch?v=Iton9k9aSWs     10.01.2026 ❌ [СТРИМ] МОЙ ПЕРВЫЙ СТРИМ
-            #2 https://www.youtube.com/watch?v=FnXdHEH2wl8     11.01.2026 ❌ [СТРИМ] БЛИН ЭТА ОПЯТЬ ГАПИ ПОТТЕПР?
-            #3 https://www.youtube.com/watch?v=-F3PBGNyHvU     18.01.2026 ❌ [СТРИМ] КОНСУЛЬТАНТ ПО ИГРАМ PS2 ХОЧЕТ ЧЕТА СКАЗАТЬ! (БУДЕТ ГАРРИ ПОТТЕР(
-            #4 https://www.youtube.com/watch?v=ajg4FQmcDOk     24.01.2026 ❌ [СТРИМ] НУ И КОГДА ВЫХОДИТ HALF-LIFE 3 ??
-            #5 https://www.youtube.com/watch?v=JrbElLJgwkY     25.01.2026 ❌ [СТРИМ] НУ И КОГДА ВЫХОДИТ HALF-LIFE 3 ??
-            #6 https://www.youtube.com/watch?v=x9UVVgnsvQY     25.01.2026 ❌ [СТРИМ] ПРЯМО КАК В СТАРЫЕ ДОБРЫЕ ВРЕМЕНА
-            #7 https://www.youtube.com/watch?v=A6dUcH5TmrQ     31.01.2026 ❌ [СТРИМ] УТЕРЯННЫЕ ФАЙЛЫ БЕТЫ ( БЕЗ ВЕБКИ)
-            #8 https://www.youtube.com/watch?v=fTFpy2pok44     07.02.2026 ✅ [СТРИМ] НУ ВОТ И КОНЕЦ ЛИНИИ.... ( С ВЕБКОЙ)
-            #9 https://www.youtube.com/watch?v=54MdxLn538E     08.02.2026 ✅ [СТРИМ] РАЗБИРАЕМ HLX (С ВЕБКОЙ)
-            #10 https://www.youtube.com/watch?v=D4z4lJx3un0    14.02.2026 ✅ [СТРИМ] РАЗБЕРУ СТАРЫЙ СИТИ 17 (С ВЕБКОЙ)
-            #11 https://www.youtube.com/watch?v=Sg0av_Aqaco    15.02.2026 ❌ [СТРИМ] СЕДНЯ КОРОТКО ЧАСА 2 (С ВЕБКОЙ)
-            #12 https://www.youtube.com/watch?v=wA_iwzYXNHc    21.02.2026 ❌ [СТРИМ] ГОСТЬ АЛЯ ЗАНОЗА
-            #13 https://www.youtube.com/watch?v=Y-aXq6u1ZDA    22.02.2026 ❌ [СТРИМ] СМОТРИМ ВИДЕО (
-            #14 https://www.youtube.com/watch?v=H1HITvp36e8    27.02.2026 ❌ [СТРИМ] RESIDENT EVIL 9 - Я ГЕЙМЕР
-            #15 https://www.youtube.com/watch?v=zGJ8V_VhtJ8    28.02.2026 ❌ [СТРИМ] НАСТЯ ДЖЕКСОН И ДРУГИЕ ПАСАНЫ (ВИДЕО)
-            #16 https://www.youtube.com/watch?v=Za9D8rZFUMA    07.03.2026 ✅ [СТРИМ] СМОТРИМ ВИДЕО КРУТЫХ ТЁЛОК
-            #17 https://www.youtube.com/watch?v=LLN1KSbkzVs    08.03.2026 ✅ [СТРИМ] ЭТОГО НИКТО НЕ ЖДАЛ.....
-            #18 https://www.youtube.com/watch?v=BnZIJlNA_p4    15.03.2026 ✅ [СТРИМ] БРИН НАТРАВИЛ ПАТРУЛЬ НА ВОРТИГОНТОВ
-            #19 https://www.youtube.com/watch?v=02BlzqgfGjs    22.03.2026 ✅ [СТРИМ] ЭТИХ ИГР НА САМОМ ДЕЛЕ НЕТ!
-            #20 https://www.youtube.com/watch?v=k7XQ7w6OYsM    23.03.2026 ✅ [СТРИМ] ЭТИ ВИДЕО ПУГАЮТ ДО УЖАСАСА
-            #21 https://www.youtube.com/watch?v=T2N5zfdpSZg    27.03.2026 ✅ [СТРИМ] ОТВЕЧАЮ НА РАЗОБЛАЧЕНИЕ
-            #22 https://www.youtube.com/watch?v=G8nQ41PlblU    28.03.2026 ✅ [СТРИМ] НАСТАЛА ВРЕМЯ ДЕЛЯ СИРИОЗНОГО РАЗГАВОРА !
-            #23 https://www.youtube.com/watch?v=uxaYJQ5NFUs    03.04.2026 ✅ [СТРИМ] ВОТ ТАК ВСЕГДА СНАЧАЛА ВЕСЬ КВАРТАЛ ПОТОМ ЗДАНИЕ
-            #24 https://www.youtube.com/watch?v=-ivze5N5m-8    04.04.2026 ❌ [СТРИМ] ДЕНЬ СТРАШНЫХ ВИДЕО?
-            #25 https://www.youtube.com/watch?v=60sY4Q-MvuM    10.04.2026 ✅ [СТРИМ] СМОТРИМ ВИДЕО НАСТИ ДЖЕКСЯН (КОНЦЕПТЫ)
-            #26 https://www.youtube.com/watch?v=wzX9KyC9MdQ    11.04.2026 ✅ [СТРИМ] АЛЕКСИС ФАКС ОТДЫХАЕТ ПОСЛЕ РАБОТЫ
-            #27 https://www.youtube.com/watch?v=yO0MaUpns_Y    25.04.2026 ✅ [СТРИМ] СМОТРИМ ВИДЕО И ИГРЫ ТОЖЕ
-            #28 https://www.youtube.com/watch?v=QaQ9VuCYt80    02.05.2026 ✅ [СТРИМ] СМОТРИМ ВИДЕО + ДЕВОЧКИ ПОД КРЫШЕЙ 2 (ЗВОНИ ТОЖЕ)
-            #29 https://www.youtube.com/watch?v=C2eIQrifmKU    03.05.2026 ✅ [СТРИМ] СМОТРИМ ВИДЕО + ЗВОНИМ ДЕВОЧКАМ
-            #30 https://www.youtube.com/watch?v=6Rb2_LxUnDo    08.05.2026 ✅ [СТРИМ] РАСКРЫВАЮТ СЕКЕРТЫ HALF-LIFE И PORTAL
-            #31 https://www.youtube.com/watch?v=PiWFaAspL54    09.05.2026 ✅ [СТРИМ] Я ПОЛУЧИЛ ПРЕМИЮ ГЕЙМЕРСТВА!!!!
-            #32 https://www.youtube.com/watch?v=lzrmvy3pyTQ    16.05.2026 ❌ [СТРИМ] МНЕ НАДО КОЕ ЧТО СКАЗАТЬ......MIXTAPE (ИГРЫ БУДУТ ТОЖЕ)
-            #33 https://www.youtube.com/watch?v=lGkaxA83rPs    17.05.2026 ✅ [СТРИМ] ЧЕЛЛ ТЫ.....плОХО СПАЛ??? MIXTAPE И СМОТРИМ ВИДЕО
-            #34 https://www.youtube.com/watch?v=AxgLrkm6Y3E    29.05.2026 ✅ [СТРИМ] ПЕРВЫЙ СТРИМ (БЕЗ МАСКИ) СМОТРИМ ВИДЕО
-            #35 https://www.youtube.com/watch?v=Wmf5MD1mBFw    30.05.2026 ✅ [СТРИМ] ВСЁ ЧТО МЫ ЗАЕМ О ХАЛФ ЛАЙФ 3 (СМОТРИМ ВИДЕО)
-            #36 https://www.youtube.com/watch?v=hq1b1byrYME    05.06.2026 ✅ [СТРИМ] SUMMER GAME FEST - HALF-LIFE 3 СЕГОДНЯ ИЛИ......КОГДА?
-            #37 https://www.youtube.com/watch?v=ZqVZwC6xG-Y    12.06.2026 ❌ [СТРИМ] ВАЖНАЯ ТЕМА ПАЦЫКИ ( МОЖЕТ БЫТЬ GOTIKA REMAKE)
-            #38 https://www.youtube.com/watch?v=sPJgkpRIurw    19.06.2026 ✅ [СТРИМ] ЗНАЕТЕ ЧТО СЕГОДНЯ БУДЕТ?? (С ВЕБКОЙ)
-            #39 https://www.youtube.com/watch?v=pIkhssFsncg    20.06.2026 ✅ [СТРИМ] ГОТИКА ИЛИ ДУМ ВДУМЧИВО НЕ КАК ВЧЕРА)
-            #40 https://www.youtube.com/watch?v=bqgvjbHDVtk    27.06.2026 ✅ [СТРИМ] ЭКСПЕРИМЕНТ - ВЫРЕЗАННЫЙ КОНТЕНТ РАЗНЫХ ИГР
-            #41 https://www.youtube.com/watch?v=YOL4j1-cNWg    04.07.2026 ✅ [СТРИМ] СМОТРИМ ВИДЕО
-            #42 https://www.youtube.com/watch?v=JEEpcIb_75U    05.07.2026 ✅ [СТРИМ] СМОТРИМ ВИДЕО (СТРАННЫЕ)
-            #43 https://www.youtube.com/watch?v=TWFbwdSzGeM    11.07.2026 ✅ [СТРИМ] ХА-ХА ГОРДОН ФРИМЕН?? ТОГДА Я ТОЖЕ С ВАМИ БУДУ СМОТРЕТЬ ВИДЕО)
-            #44 https://www.youtube.com/watch?v=CGnfmwuKiAw    12.07.2026 ✅ [СТРИМ] ОБЫЧНЫЙ ПОНЕДЕЛЬНИК (ВИДЕО)
-            #45 https://www.youtube.com/watch?v=71v1Eh_cEBA    18.07.2026 ✅ [СТРИМ] 67 ДНЕЙ ДО ВЫХОДА HLX (ВИДЕО)
-            `;
-    
+    const streamsData = `
+    #1 https://www.youtube.com/watch?v=Iton9k9aSWs     10.01.2026 [СТРИМ] МОЙ ПЕРВЫЙ СТРИМ
+    #2 https://www.youtube.com/watch?v=FnXdHEH2wl8     11.01.2026 [СТРИМ] БЛИН ЭТА ОПЯТЬ ГАПИ ПОТТЕПР?
+    #3 https://www.youtube.com/watch?v=-F3PBGNyHvU     18.01.2026 [СТРИМ] КОНСУЛЬТАНТ ПО ИГРАМ PS2 ХОЧЕТ ЧЕТА СКАЗАТЬ! (БУДЕТ ГАРРИ ПОТТЕР(
+    #4 https://www.youtube.com/watch?v=ajg4FQmcDOk     24.01.2026 [СТРИМ] НУ И КОГДА ВЫХОДИТ HALF-LIFE 3 ??
+    #5 https://www.youtube.com/watch?v=JrbElLJgwkY     25.01.2026 [СТРИМ] НУ И КОГДА ВЫХОДИТ HALF-LIFE 3 ??
+    #6 https://www.youtube.com/watch?v=x9UVVgnsvQY     25.01.2026 [СТРИМ] ПРЯМО КАК В СТАРЫЕ ДОБРЫЕ ВРЕМЕНА
+    #7 https://www.youtube.com/watch?v=A6dUcH5TmrQ     31.01.2026 [СТРИМ] УТЕРЯННЫЕ ФАЙЛЫ БЕТЫ ( БЕЗ ВЕБКИ)
+    #8 https://www.youtube.com/watch?v=fTFpy2pok44     07.02.2026 [СТРИМ] НУ ВОТ И КОНЕЦ ЛИНИИ.... ( С ВЕБКОЙ)
+    #9 https://www.youtube.com/watch?v=54MdxLn538E     08.02.2026 [СТРИМ] РАЗБИРАЕМ HLX (С ВЕБКОЙ)
+    #10 https://www.youtube.com/watch?v=D4z4lJx3un0    14.02.2026 [СТРИМ] РАЗБЕРУ СТАРЫЙ СИТИ 17 (С ВЕБКОЙ)
+    #11 https://www.youtube.com/watch?v=Sg0av_Aqaco    15.02.2026 [СТРИМ] СЕДНЯ КОРОТКО ЧАСА 2 (С ВЕБКОЙ)
+    #12 https://www.youtube.com/watch?v=wA_iwzYXNHc    21.02.2026 [СТРИМ] ГОСТЬ АЛЯ ЗАНОЗА
+    #13 https://www.youtube.com/watch?v=Y-aXq6u1ZDA    22.02.2026 [СТРИМ] СМОТРИМ ВИДЕО (
+    #14 https://www.youtube.com/watch?v=H1HITvp36e8    27.02.2026 [СТРИМ] RESIDENT EVIL 9 - Я ГЕЙМЕР
+    #15 https://www.youtube.com/watch?v=zGJ8V_VhtJ8    28.02.2026 [СТРИМ] НАСТЯ ДЖЕКСОН И ДРУГИЕ ПАСАНЫ (ВИДЕО)
+    #16 https://www.youtube.com/watch?v=Za9D8rZFUMA    07.03.2026 [СТРИМ] СМОТРИМ ВИДЕО КРУТЫХ ТЁЛОК
+    #17 https://www.youtube.com/watch?v=LLN1KSbkzVs    08.03.2026 [СТРИМ] ЭТОГО НИКТО НЕ ЖДАЛ.....
+    #18 https://www.youtube.com/watch?v=BnZIJlNA_p4    15.03.2026 [СТРИМ] БРИН НАТРАВИЛ ПАТРУЛЬ НА ВОРТИГОНТОВ
+    #19 https://www.youtube.com/watch?v=02BlzqgfGjs    22.03.2026 [СТРИМ] ЭТИХ ИГР НА САМОМ ДЕЛЕ НЕТ!
+    #20 https://www.youtube.com/watch?v=k7XQ7w6OYsM    23.03.2026 [СТРИМ] ЭТИ ВИДЕО ПУГАЮТ ДО УЖАСАСА
+    #21 https://www.youtube.com/watch?v=T2N5zfdpSZg    27.03.2026 [СТРИМ] ОТВЕЧАЮ НА РАЗОБЛАЧЕНИЕ
+    #22 https://www.youtube.com/watch?v=G8nQ41PlblU    28.03.2026 [СТРИМ] НАСТАЛА ВРЕМЯ ДЕЛЯ СИРИОЗНОГО РАЗГАВОРА !
+    #23 https://www.youtube.com/watch?v=uxaYJQ5NFUs    03.04.2026 [СТРИМ] ВОТ ТАК ВСЕГДА СНАЧАЛА ВЕСЬ КВАРТАЛ ПОТОМ ЗДАНИЕ
+    #24 https://www.youtube.com/watch?v=-ivze5N5m-8    04.04.2026 [СТРИМ] ДЕНЬ СТРАШНЫХ ВИДЕО?
+    #25 https://www.youtube.com/watch?v=60sY4Q-MvuM    10.04.2026 [СТРИМ] СМОТРИМ ВИДЕО НАСТИ ДЖЕКСЯН (КОНЦЕПТЫ)
+    #26 https://www.youtube.com/watch?v=wzX9KyC9MdQ    11.04.2026 [СТРИМ] АЛЕКСИС ФАКС ОТДЫХАЕТ ПОСЛЕ РАБОТЫ
+    #27 https://www.youtube.com/watch?v=yO0MaUpns_Y    25.04.2026 [СТРИМ] СМОТРИМ ВИДЕО И ИГРЫ ТОЖЕ
+    #28 https://www.youtube.com/watch?v=QaQ9VuCYt80    02.05.2026 [СТРИМ] СМОТРИМ ВИДЕО + ДЕВОЧКИ ПОД КРЫШЕЙ 2 (ЗВОНИ ТОЖЕ)
+    #29 https://www.youtube.com/watch?v=C2eIQrifmKU    03.05.2026 [СТРИМ] СМОТРИМ ВИДЕО + ЗВОНИМ ДЕВОЧКАМ
+    #30 https://www.youtube.com/watch?v=6Rb2_LxUnDo    08.05.2026 [СТРИМ] РАСКРЫВАЮТ СЕКЕРТЫ HALF-LIFE И PORTAL
+    #31 https://www.youtube.com/watch?v=PiWFaAspL54    09.05.2026 [СТРИМ] Я ПОЛУЧИЛ ПРЕМИЮ ГЕЙМЕРСТВА!!!!
+    #32 https://www.youtube.com/watch?v=lzrmvy3pyTQ    16.05.2026 [СТРИМ] МНЕ НАДО КОЕ ЧТО СКАЗАТЬ......MIXTAPE (ИГРЫ БУДУТ ТОЖЕ)
+    #33 https://www.youtube.com/watch?v=lGkaxA83rPs    17.05.2026 [СТРИМ] ЧЕЛЛ ТЫ.....плОХО СПАЛ??? MIXTAPE И СМОТРИМ ВИДЕО
+    #34 https://www.youtube.com/watch?v=AxgLrkm6Y3E    29.05.2026 [СТРИМ] ПЕРВЫЙ СТРИМ (БЕЗ МАСКИ) СМОТРИМ ВИДЕО
+    #35 https://www.youtube.com/watch?v=Wmf5MD1mBFw    30.05.2026 [СТРИМ] ВСЁ ЧТО МЫ ЗАЕМ О ХАЛФ ЛАЙФ 3 (СМОТРИМ ВИДЕО)
+    #36 https://www.youtube.com/watch?v=hq1b1byrYME    05.06.2026 [СТРИМ] SUMMER GAME FEST - HALF-LIFE 3 СЕГОДНЯ ИЛИ......КОГДА?
+    #37 https://www.youtube.com/watch?v=ZqVZwC6xG-Y    12.06.2026 [СТРИМ] ВАЖНАЯ ТЕМА ПАЦЫКИ ( МОЖЕТ БЫТЬ GOTIKA REMAKE)
+    #38 https://www.youtube.com/watch?v=sPJgkpRIurw    19.06.2026 [СТРИМ] ЗНАЕТЕ ЧТО СЕГОДНЯ БУДЕТ?? (С ВЕБКОЙ)
+    #39 https://www.youtube.com/watch?v=pIkhssFsncg    20.06.2026 [СТРИМ] ГОТИКА ИЛИ ДУМ ВДУМЧИВО НЕ КАК ВЧЕРА)
+    #40 https://www.youtube.com/watch?v=bqgvjbHDVtk    27.06.2026 [СТРИМ] ЭКСПЕРИМЕНТ - ВЫРЕЗАННЫЙ КОНТЕНТ РАЗНЫХ ИГР
+    #41 https://www.youtube.com/watch?v=YOL4j1-cNWg    04.07.2026 [СТРИМ] СМОТРИМ ВИДЕО
+    #42 https://www.youtube.com/watch?v=JEEpcIb_75U    05.07.2026 [СТРИМ] СМОТРИМ ВИДЕО (СТРАННЫЕ)
+    #43 https://www.youtube.com/watch?v=TWFbwdSzGeM    11.07.2026 [СТРИМ] ХА-ХА ГОРДОН ФРИМЕН?? ТОГДА Я ТОЖЕ С ВАМИ БУДУ СМОТРЕТЬ ВИДЕО)
+    #44 https://www.youtube.com/watch?v=CGnfmwuKiAw    12.07.2026 [СТРИМ] ОБЫЧНЫЙ ПОНЕДЕЛЬНИК (ВИДЕО)
+    #45 https://www.youtube.com/watch?v=71v1Eh_cEBA    18.07.2026 [СТРИМ] 67 ДНЕЙ ДО ВЫХОДА HLX (ВИДЕО)
+    `;
+
     let allStreams = [], currentFilter = 'all', currentSearch = '';
     const emojiContainer = document.getElementById('emoji-container'), activeEmojis = [];
     let emojiInterval = null, lastAnimationFrame = null;
-    
-    // Счетчики
+
     function countStreams() {
         const available = allStreams.filter(s => s.status === 'available').length;
         const unavailable = allStreams.filter(s => s.status === 'unavailable').length;
         return { available, unavailable };
     }
-    
+
     function addCountersToFilters() {
         const counts = countStreams();
         const filterButtons = document.querySelectorAll('.filter-btn');
         
-        const style = document.createElement('style');
-        style.textContent = `.filter-btn{position:relative;padding-top:28px}
-.filter-count{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:14px;font-weight:700;z-index:10;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:12px;padding:0 8px;white-space:nowrap;transition:all .3s}
-.filter-btn[data-filter="all"] .filter-count{background:var(--all-color);color:#fff;box-shadow:0 0 10px rgba(255,126,51,.5)}
-.filter-btn[data-filter="available"] .filter-count{background:var(--success);color:#003311;box-shadow:0 0 10px rgba(77,255,122,.5)}
-.filter-btn[data-filter="unavailable"] .filter-count{background:var(--error);color:#fff;box-shadow:0 0 10px rgba(255,77,77,.5)}
-@media(max-width:768px){.filter-count{font-size:12px;min-width:20px;height:20px;border-radius:10px}.filter-btn{padding-top:24px}}`;
-        document.head.appendChild(style);
-        
         filterButtons.forEach(btn => {
+            const old = btn.querySelector('.filter-count');
+            if (old) old.remove();
+            
             let count = 0;
             const type = btn.dataset.filter;
             if (type === 'all') count = allStreams.length;
@@ -486,38 +465,62 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.appendChild(countEl);
         });
     }
-    
-    // Парсинг данных
+
     const lines = streamsData.split('\n');
     lines.forEach(line => {
         line = line.trim();
         if (!line) return;
         
-        const parts = line.split(/\s+/);
-        if (parts.length >= 4) {
-            const videoIdMatch = parts[1].match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+        const match = line.match(/^#(\d+)\s+(https?:\/\/\S+)\s+(\d{2}\.\d{2}\.\d{4})\s+(.*)$/);
+        if (match) {
+            const videoUrl = match[2];
+            const videoIdMatch = videoUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
+            
             allStreams.push({
-                number: parts[0].substring(1),
-                url: parts[1],
-                date: parts[2],
-                status: parts[3] === '✅' ? 'available' : 'unavailable',
-                statusIcon: parts[3],
+                number: match[1],
+                url: videoUrl,
+                date: match[3],
                 videoId: videoIdMatch ? videoIdMatch[1] : '',
-                title: parts.slice(4).join(' ')
+                title: match[4],
+                status: 'checking',
+                statusIcon: '⏳'
             });
         }
     });
-    
-    addCountersToFilters();
-    
-    // Эмодзи
+
+    async function checkStreamStatus(stream) {
+        if (!stream.videoId) {
+            stream.status = 'unavailable';
+            stream.statusIcon = '❌';
+            return;
+        }
+        try {
+            const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${stream.videoId}&format=json`);
+            if (res.ok) {
+                stream.status = 'available';
+                stream.statusIcon = '✅';
+            } else {
+                stream.status = 'unavailable';
+                stream.statusIcon = '❌';
+            }
+        } catch (e) {
+            stream.status = 'unavailable';
+            stream.statusIcon = '❌';
+        }
+    }
+
+    async function checkAllStreams() {
+        await Promise.all(allStreams.map(stream => checkStreamStatus(stream)));
+        addCountersToFilters();
+        renderStreams();
+    }
+
     function getRandomEmoji() {
         return `emoji/emoji${Math.floor(Math.random() * 50)}.webp`;
     }
-    
+
     function createFallingEmoji() {
         if (document.hidden) return;
-        
         const emoji = document.createElement('div');
         emoji.className = 'falling-emoji';
         emoji.style.backgroundImage = `url('${getRandomEmoji()}')`;
@@ -528,19 +531,12 @@ document.addEventListener('DOMContentLoaded', function() {
         emoji.style.width = `${size}px`;
         emoji.style.height = `${size}px`;
         emojiContainer.appendChild(emoji);
-        
-        const emojiData = {
-            element: emoji,
-            speed: 0.5 + Math.random() * 2.5,
-            position: -30,
-            removed: false
-        };
+        const emojiData = { element: emoji, speed: 0.5 + Math.random() * 2.5, position: -30, removed: false };
         activeEmojis.push(emojiData);
-        
         if (!lastAnimationFrame) animateEmojis();
         setTimeout(() => { if (!emojiData.removed) removeEmoji(emojiData); }, 10000);
     }
-    
+
     function animateEmojis() {
         for (let i = activeEmojis.length - 1; i >= 0; i--) {
             const emoji = activeEmojis[i];
@@ -555,25 +551,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if (activeEmojis.length > 0) lastAnimationFrame = requestAnimationFrame(animateEmojis);
         else lastAnimationFrame = null;
     }
-    
+
     function removeEmoji(emoji) {
         if (emoji.removed) return;
         emoji.removed = true;
         if (emoji.element.parentNode) emoji.element.parentNode.removeChild(emoji.element);
     }
-    
+
     function startEmojiSystem() {
         if (emojiInterval) clearInterval(emojiInterval);
         emojiInterval = setInterval(createFallingEmoji, 700 + Math.random() * 300);
-        
         activeEmojis.forEach(emoji => removeEmoji(emoji));
         activeEmojis.length = 0;
-        
-        setTimeout(() => { 
-            for (let i = 0; i < 5; i++) setTimeout(createFallingEmoji, i * 200); 
-        }, 1000);
+        setTimeout(() => { for (let i = 0; i < 5; i++) setTimeout(createFallingEmoji, i * 200); }, 1000);
     }
-    
+
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             if (emojiInterval) clearInterval(emojiInterval);
@@ -586,16 +578,23 @@ document.addEventListener('DOMContentLoaded', function() {
             startEmojiSystem();
         }
     });
-    
+
     startEmojiSystem();
-    
-    function initSearch() {
-        document.getElementById('searchInput').addEventListener('input', function() {
-            currentSearch = this.value.toLowerCase().trim();
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+        currentSearch = this.value.toLowerCase().trim();
+        renderStreams();
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            currentFilter = this.dataset.filter;
             renderStreams();
         });
-    }
-    
+    });
+
     function renderStreams() {
         const streamsContainer = document.getElementById('streamsContainer');
         streamsContainer.innerHTML = '';
@@ -618,34 +617,47 @@ document.addEventListener('DOMContentLoaded', function() {
             const card = document.createElement('div');
             card.className = `stream-card ${stream.status}`;
             card.style.animationDelay = `${0.2 + index * 0.1}s`;
+            
+            let statusText = 'Проверка...';
+            let statusClass = 'status-checking';
+            if (stream.status === 'available') {
+                statusText = 'Доступен';
+                statusClass = 'status-available';
+            } else if (stream.status === 'unavailable') {
+                statusText = 'Недоступен';
+                statusClass = 'status-unavailable';
+            }
+            
             card.innerHTML = `<div class="stream-number">#${stream.number}</div>
                 <div class="stream-thumbnail" style="background-image:url('https://img.youtube.com/vi/${stream.videoId}/mqdefault.jpg')"></div>
                 <div class="stream-info">
                     <div class="stream-title">${stream.title || 'Название недоступно'}</div>
                     <div class="stream-date">${stream.date}</div>
                     <div class="stream-status">
-                        <span class="status-icon ${stream.status === 'available' ? 'status-available' : 'status-unavailable'}">${stream.statusIcon}</span>
-                        <span>${stream.status === 'available' ? 'Доступен' : 'Недоступен'}</span>
+                        <span class="status-icon ${statusClass}">${stream.statusIcon}</span>
+                        <span>${statusText}</span>
                     </div>
                 </div>
                 <a href="${stream.url}" class="stream-link" target="_blank"></a>`;
             streamsContainer.appendChild(card);
         });
     }
-    
-    function initFilters() {
-        document.querySelectorAll('.filter-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-                currentFilter = this.dataset.filter;
-                renderStreams();
-            });
-        });
-    }
-    
+
+    const style = document.createElement('style');
+    style.textContent = `
+        .filter-btn{position:relative;padding-top:28px}
+        .filter-count{position:absolute;top:4px;left:50%;transform:translateX(-50%);font-size:14px;font-weight:700;z-index:10;min-width:24px;height:24px;display:flex;align-items:center;justify-content:center;border-radius:12px;padding:0 8px;white-space:nowrap;transition:all .3s}
+        .filter-btn[data-filter="all"] .filter-count{background:var(--all-color);color:#fff;box-shadow:0 0 10px rgba(255,126,51,.5)}
+        .filter-btn[data-filter="available"] .filter-count{background:var(--success);color:#003311;box-shadow:0 0 10px rgba(77,255,122,.5)}
+        .filter-btn[data-filter="unavailable"] .filter-count{background:var(--error);color:#fff;box-shadow:0 0 10px rgba(255,77,77,.5)}
+        @media(max-width:768px){.filter-count{font-size:12px;min-width:20px;height:20px;border-radius:10px}.filter-btn{padding-top:24px}}
+    `;
+    document.head.appendChild(style);
+
+    addCountersToFilters();
     renderStreams();
-    initSearch();
-    initFilters();
+    checkAllStreams();
 });
 </script>
+</body>
+</html>
