@@ -250,7 +250,6 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding-right: 30px;
         }
         
         .stream-date {
@@ -259,6 +258,14 @@
             margin-bottom: 0.5rem;
         }
         
+        /* Ряд со статусом и иконкой YouTube */
+        .stream-bottom-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+
         .stream-status {
             display: flex;
             align-items: center;
@@ -292,11 +299,8 @@
             cursor: pointer;
         }
 
-        /* Иконка YouTube в углу карточки */
+        /* Иконка YouTube справа от статуса */
         .yt-icon-link {
-            position: absolute;
-            bottom: 15px;
-            right: 15px;
             width: 24px;
             height: 24px;
             cursor: pointer;
@@ -781,12 +785,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="stream-info">
                     <div class="stream-title">${stream.title || 'Название недоступно'}</div>
                     <div class="stream-date">${stream.date}</div>
-                    <div class="stream-status">
-                        <span class="status-icon ${statusClass}">${stream.statusIcon}</span>
-                        <span>${statusText}</span>
+                    <div class="stream-bottom-row">
+                        <div class="stream-status">
+                            <span class="status-icon ${statusClass}">${stream.statusIcon}</span>
+                            <span>${statusText}</span>
+                        </div>
+                        <img src="assets/avatars/youtube.webp" class="yt-icon-link" alt="YouTube" title="Открыть на YouTube">
                     </div>
                 </div>
-                <img src="assets/avatars/youtube.webp" class="yt-icon-link" alt="YouTube" title="Открыть на YouTube">
                 <a href="${stream.url}" class="stream-link"></a>`;
             
             const link = card.querySelector('.stream-link');
