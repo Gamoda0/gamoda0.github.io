@@ -226,6 +226,7 @@
         
         .stream-info {
             padding: 1.2rem;
+            position: relative;
         }
         
         .stream-number {
@@ -249,6 +250,8 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
+            padding-right: 50px;
+            min-height: 2.4rem;
         }
         
         .stream-date {
@@ -287,6 +290,26 @@
             width: 100%;
             height: 100%;
             z-index: 2;
+            cursor: pointer;
+        }
+
+        .yt-icon-link {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.2rem;
+            width: 40px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            object-fit: contain;
+        }
+
+        .yt-icon-link:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
         }
         
         .loading {
@@ -330,7 +353,68 @@
             pointer-events: none;
             will-change: transform;
         }
+
+        .video-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .video-modal-container {
+            width: 90%;
+            max-width: 1000px;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 140, 0, 0.2);
+        }
+        .video-modal-container iframe {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border: none;
+        }
         
+        .video-modal-close {
+            position: fixed;
+            top: 30px;
+            right: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 2rem;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 1010;
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-modal-close:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: rotate(90deg) scale(1.1);
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -352,6 +436,16 @@
             
             .filters {
                 flex-wrap: wrap;
+            }
+            .video-modal-container {
+                width: 95%;
+            }
+            .video-modal-close {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -382,6 +476,13 @@
         
         <div class="streams-grid" id="streamsContainer">
             <div class="loading">Загрузка данных о стримах...</div>
+        </div>
+    </div>
+
+    <div class="video-modal-overlay" id="videoModalOverlay">
+        <button class="video-modal-close" id="closeVideoModal">&times;</button>
+        <div class="video-modal-container" id="videoModalContainer">
+            <iframe id="youtubeIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
     </div>
 
@@ -433,6 +534,41 @@ document.addEventListener('DOMContentLoaded', function() {
     let allStreams = [], currentFilter = 'all', currentSearch = '';
     const emojiContainer = document.getElementById('emoji-container'), activeEmojis = [];
     let emojiInterval = null, lastAnimationFrame = null;
+
+    const modalOverlay = document.getElementById('videoModalOverlay');
+    const modalContainer = document.getElementById('videoModalContainer');
+    const iframePlayer = document.getElementById('youtubeIframe');
+    const closeModalBtn = document.getElementById('closeVideoModal');
+
+    function openVideoModal(videoId, originalUrl) {
+        if (!videoId) {
+            window.open(originalUrl, '_blank');
+            return;
+        }
+        iframePlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        
+        modalOverlay.style.display = 'flex';
+        setTimeout(() => {
+            modalOverlay.style.opacity = '1';
+            modalContainer.style.transform = 'scale(1)';
+        }, 10);
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeVideoModal() {
+        modalOverlay.style.opacity = '0';
+        modalContainer.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            modalOverlay.style.display = 'none';
+            iframePlayer.src = ''; 
+            document.body.style.overflow = '';
+        }, 300);
+    }
+
+    closeModalBtn.addEventListener('click', closeVideoModal);
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) closeVideoModal();
+    });
 
     function countStreams() {
         const available = allStreams.filter(s => s.status === 'available').length;
@@ -632,8 +768,23 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="status-icon ${statusClass}">${stream.statusIcon}</span>
                         <span>${statusText}</span>
                     </div>
+                    <img src="assets/avatars/youtube.webp" class="yt-icon-link" alt="YouTube" title="Открыть на YouTube">
                 </div>
-                <a href="${stream.url}" class="stream-link" target="_blank"></a>`;
+                <a href="${stream.url}" class="stream-link"></a>`;
+            
+            const link = card.querySelector('.stream-link');
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                openVideoModal(stream.videoId, stream.url);
+            });
+
+            const ytIcon = card.querySelector('.yt-icon-link');
+            ytIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                window.open(stream.url, '_blank');
+            });
+            
             streamsContainer.appendChild(card);
         });
     }
