@@ -250,6 +250,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
+            padding-right: 30px;
         }
         
         .stream-date {
@@ -262,7 +263,6 @@
             display: flex;
             align-items: center;
             font-size: 0.9rem;
-            margin-bottom: 1rem;
         }
         
         .status-icon {
@@ -282,7 +282,6 @@
             color: var(--warning);
         }
         
-        /* Ссылка-обертка для открытия модалки */
         .stream-link {
             position: absolute;
             top: 0;
@@ -293,29 +292,22 @@
             cursor: pointer;
         }
 
-        /* Кнопка перехода напрямую на YouTube */
-        .goto-btn {
-            position: relative;
-            z-index: 10;
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
+        /* Иконка YouTube в углу карточки */
+        .yt-icon-link {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 24px;
+            height: 24px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Montserrat', sans-serif;
-            text-decoration: none;
+            z-index: 10;
+            transition: transform 0.2s ease, filter 0.2s ease;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
 
-        .goto-btn:hover {
-            background: var(--primary);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(255, 69, 0, 0.3);
+        .yt-icon-link:hover {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.6));
         }
         
         .loading {
@@ -489,9 +481,7 @@
 
     <!-- Модальное окно плеера -->
     <div class="video-modal-overlay" id="videoModalOverlay">
-        <!-- Крестик теперь снаружи плеера -->
         <button class="video-modal-close" id="closeVideoModal">&times;</button>
-        
         <div class="video-modal-container" id="videoModalContainer">
             <iframe id="youtubeIframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
@@ -562,7 +552,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const emojiContainer = document.getElementById('emoji-container'), activeEmojis = [];
     let emojiInterval = null, lastAnimationFrame = null;
 
-    // Элементы модального окна
     const modalOverlay = document.getElementById('videoModalOverlay');
     const modalContainer = document.getElementById('videoModalContainer');
     const iframePlayer = document.getElementById('youtubeIframe');
@@ -796,21 +785,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="status-icon ${statusClass}">${stream.statusIcon}</span>
                         <span>${statusText}</span>
                     </div>
-                    <button class="goto-btn">Перейти на YouTube</button>
                 </div>
+                <img src="assets/avatars/youtube.webp" class="yt-icon-link" alt="YouTube" title="Открыть на YouTube">
                 <a href="${stream.url}" class="stream-link"></a>`;
             
-            // Ссылка-обертка открывает модалку
             const link = card.querySelector('.stream-link');
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 openVideoModal(stream.videoId, stream.url);
             });
 
-            // Кнопка «Перейти» открывает ютуб напрямую
-            const gotoBtn = card.querySelector('.goto-btn');
-            gotoBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Останавливаем клик, чтобы не открылась модалка
+            const ytIcon = card.querySelector('.yt-icon-link');
+            ytIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 window.open(stream.url, '_blank');
             });
             
