@@ -462,6 +462,106 @@
             height: 32px;
             fill: currentColor;
         }
+        .media-player video {
+            transition: opacity 0.5s ease;
+        }
+        .media-player.video-ended > video {
+            opacity: 0.22;
+        }
+        .end-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 4;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            padding: 14px;
+            background: linear-gradient(180deg, rgba(10, 10, 10, 0.82), rgba(10, 10, 10, 0.94));
+            backdrop-filter: blur(6px);
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .end-screen.visible {
+            display: flex;
+            opacity: 1;
+        }
+        .end-head {
+            flex: 0 0 auto;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.72);
+        }
+        .end-grid {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 1fr;
+            gap: 8px;
+        }
+        .end-item {
+            position: relative;
+            border: none;
+            padding: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #000;
+            cursor: pointer;
+            text-align: left;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+            animation: endItemIn 0.35s ease both;
+        }
+        .end-item:hover {
+            box-shadow: 0 0 0 2px var(--primary);
+            transform: translateY(-2px);
+        }
+        .end-item video,
+        .end-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            background: #000;
+        }
+        .end-caption {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 14px 6px 5px;
+            font-size: 10px;
+            font-weight: 600;
+            line-height: 1.25;
+            color: #fff;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .end-badge {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            padding: 1px 5px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.72);
+            border: 1px solid rgba(255, 140, 0, 0.4);
+            color: #fff;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        @keyframes endItemIn {
+            from { opacity: 0; transform: translateY(8px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
         .media-controls {
             display: flex;
             align-items: center;
@@ -705,6 +805,12 @@
             }
             .time-display {
                 font-size: 11px;
+            }
+            .end-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .end-head {
+                font-size: 10px;
             }
         }
         @container (max-width: 375px) {
@@ -1345,6 +1451,9 @@
         let playerOpen = false;
         let progressTicker = null;
         let centerPlayEl = null;
+        let currentMedia = null;
+        let endScreenEl = null;
+        let endGridEl = null;
 
         const gifUrls = [
             "assets/gif/1gif_eating.webp","assets/gif/2gif_pediknavalny.webp","assets/gif/3gif_posral.webp",
@@ -1756,8 +1865,9 @@
             playPauseBtn.innerHTML = icon(name);
             playPauseBtn.title = state === 'pause' ? 'Пауза' : (state === 'replay' ? 'Смотреть снова' : 'Смотреть');
             if (centerPlayEl) {
+                const endVisible = endScreenEl && endScreenEl.classList.contains('visible');
                 centerPlayEl.innerHTML = icon(state === 'replay' ? 'replay' : 'play');
-                centerPlayEl.style.display = state === 'pause' ? 'none' : 'flex';
+                centerPlayEl.style.display = (state === 'pause' || endVisible) ? 'none' : 'flex';
             }
         }
 
@@ -1851,6 +1961,8 @@
         function bindVideoEvents(video) {
             video.addEventListener('play', () => {
                 isPlaying = true;
+                hideEndScreen();
+                mediaPlayerDiv.classList.remove('video-ended');
                 syncPlayIcon();
                 startProgressTicker();
             });
@@ -1870,6 +1982,8 @@
             video.addEventListener('progress', updateBufferBar);
             video.addEventListener('seeked', updateProgressBar);
             video.addEventListener('ended', () => {
+                mediaPlayerDiv.classList.add('video-ended');
+                showEndScreen();
                 syncPlayIcon();
                 updateProgressBar();
             });
@@ -1878,6 +1992,74 @@
                 document.getElementById('mediaControls').style.display = 'none';
                 mediaPlayerDiv.innerHTML = '<div style="color:red; text-align:center; padding:20px;">Ошибка загрузки видео</div>';
             });
+        }
+
+        function pickSuggestions(currentUrl) {
+            const pool = mediaFiles.filter(media => media.url !== currentUrl);
+            const videos = shuffleArray(pool.filter(media => media.type === 'video'));
+            const others = shuffleArray(pool.filter(media => media.type !== 'video'));
+            return videos.concat(others).slice(0, 6);
+        }
+
+        function createEndScreen() {
+            endScreenEl = document.createElement('div');
+            endScreenEl.className = 'end-screen';
+            const head = document.createElement('div');
+            head.className = 'end-head';
+            head.textContent = 'Что ещё посмотреть';
+            endGridEl = document.createElement('div');
+            endGridEl.className = 'end-grid';
+            endScreenEl.appendChild(head);
+            endScreenEl.appendChild(endGridEl);
+            endScreenEl.addEventListener('click', (event) => event.stopPropagation());
+            mediaPlayerDiv.appendChild(endScreenEl);
+        }
+
+        function showEndScreen() {
+            if (!endScreenEl) return;
+            endGridEl.innerHTML = '';
+            pickSuggestions(currentMedia ? currentMedia.url : '').forEach((media, index) => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'end-item';
+                item.style.animationDelay = `${index * 0.05}s`;
+                let thumb;
+                if (media.type === 'video') {
+                    thumb = document.createElement('video');
+                    thumb.muted = true;
+                    thumb.playsInline = true;
+                    thumb.preload = 'metadata';
+                    thumb.src = media.url;
+                } else {
+                    thumb = document.createElement('img');
+                    thumb.loading = 'lazy';
+                    thumb.decoding = 'async';
+                    thumb.src = media.url;
+                    thumb.alt = '';
+                }
+                item.appendChild(thumb);
+                const caption = document.createElement('span');
+                caption.className = 'end-caption';
+                caption.textContent = media.caption;
+                item.appendChild(caption);
+                const badge = document.createElement('span');
+                badge.className = 'end-badge';
+                badge.textContent = momentTypeLabel(media);
+                item.appendChild(badge);
+                item.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    openMediaPlayer(media);
+                });
+                endGridEl.appendChild(item);
+            });
+            endScreenEl.classList.add('visible');
+            if (centerPlayEl) centerPlayEl.style.display = 'none';
+        }
+
+        function hideEndScreen() {
+            if (!endScreenEl) return;
+            endScreenEl.classList.remove('visible');
+            if (endGridEl) endGridEl.innerHTML = '';
         }
 
         function openMediaPlayer(media) {
@@ -1889,7 +2071,11 @@
             mediaPlayerContainer.style.removeProperty('--media-ar');
             mediaPlayerDiv.innerHTML = '';
             mediaPlayerDiv.onclick = null;
+            mediaPlayerDiv.classList.remove('video-ended');
             centerPlayEl = null;
+            endScreenEl = null;
+            endGridEl = null;
+            currentMedia = media;
             resetPlayerState();
             const placeholder = document.createElement('div');
             placeholder.className = 'loading-placeholder';
@@ -1924,6 +2110,7 @@
                 centerPlayEl.className = 'center-play';
                 centerPlayEl.innerHTML = icon('play');
                 mediaPlayerDiv.appendChild(centerPlayEl);
+                createEndScreen();
                 document.getElementById('mediaControls').style.display = 'flex';
                 currentVideo = video;
                 bindVideoEvents(video);
@@ -2092,7 +2279,11 @@
                 mediaPlayerOverlay.style.display = 'none';
                 mediaPlayerDiv.innerHTML = '';
                 mediaPlayerDiv.onclick = null;
+                mediaPlayerDiv.classList.remove('video-ended');
                 centerPlayEl = null;
+                endScreenEl = null;
+                endGridEl = null;
+                currentMedia = null;
             }, 300);
         }
 
