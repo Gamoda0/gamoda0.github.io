@@ -53,6 +53,13 @@
             position: relative;
             overflow-y: auto;
         }
+        
+        button, button:focus, button:focus-visible, button:active {
+            outline: none !important;
+            box-shadow: none !important;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         #loader-screen {
             position: fixed;
             top: 0;
@@ -570,13 +577,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border: none;
+            border: none !important;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.08);
             color: rgba(255, 255, 255, 0.9);
             cursor: pointer;
             transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
-            outline: none;
         }
         .ctrl-btn svg {
             width: 19px;
@@ -584,29 +590,23 @@
             fill: currentColor;
             display: block;
         }
-        .ctrl-btn:hover, .ctrl-btn:focus, .ctrl-btn:active {
+        .ctrl-btn:hover {
             background: rgba(255, 255, 255, 0.16);
             color: #fff;
             transform: scale(1.06);
-            outline: none;
-            box-shadow: none;
         }
         .play-btn {
             width: 46px;
             height: 46px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: #fff;
-            box-shadow: none;
-            outline: none;
         }
         .play-btn svg {
             width: 22px;
             height: 22px;
         }
-        .play-btn:hover, .play-btn:focus, .play-btn:active {
+        .play-btn:hover {
             background: linear-gradient(135deg, #ff5c1a, #ffa226);
-            box-shadow: none;
-            outline: none;
         }
         .time-display {
             flex: 0 0 auto;
@@ -721,12 +721,9 @@
             width: 34px;
             height: 34px;
             background: transparent;
-            outline: none;
         }
-        .volume-control .ctrl-btn:hover, .volume-control .ctrl-btn:focus {
+        .volume-control .ctrl-btn:hover {
             background: rgba(255, 255, 255, 0.1);
-            outline: none;
-            box-shadow: none;
         }
         .volume-slider {
             position: relative;
@@ -781,25 +778,22 @@
             align-items: center;
             justify-content: center;
             background: rgba(0, 0, 0, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.14);
+            border: none !important;
             border-radius: 50%;
             color: #fff;
             cursor: pointer;
             z-index: 1001;
             backdrop-filter: blur(4px);
             transition: all 0.2s ease;
-            outline: none;
         }
         .close-player svg {
             width: 18px;
             height: 18px;
             fill: currentColor;
         }
-        .close-player:hover, .close-player:focus {
+        .close-player:hover {
             background: var(--primary);
             transform: rotate(90deg) scale(1.1);
-            outline: none;
-            box-shadow: none;
         }
         .nav-arrow {
             position: absolute;
@@ -818,13 +812,10 @@
             z-index: 10;
             backdrop-filter: blur(5px);
             transition: all 0.2s ease;
-            outline: none;
         }
-        .nav-arrow:hover, .nav-arrow:focus {
+        .nav-arrow:hover {
             background: rgba(255, 69, 0, 0.8);
             transform: translateY(-50%) scale(1.1);
-            outline: none;
-            box-shadow: none;
         }
         .nav-arrow.left { left: 20px; }
         .nav-arrow.right { right: 20px; }
@@ -988,7 +979,7 @@
         .show-all-btn {
             margin-top: 1.5rem;
             background: linear-gradient(to right, var(--primary), var(--secondary));
-            border: none;
+            border: none !important;
             color: white;
             padding: 0.8rem 1.5rem;
             border-radius: 30px;
@@ -998,12 +989,10 @@
             transition: all 0.3s ease;
             opacity: 0;
             animation: fadeIn 0.8s 1.4s forwards;
-            outline: none;
         }
         .show-all-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 69, 0, 0.4);
-            outline: none;
         }
         .all-moments {
             display: none;
@@ -1028,14 +1017,13 @@
         }
         .category-btn {
             background: rgba(255, 255, 255, 0.1);
-            border: none;
+            border: none !important;
             color: white;
             padding: 0.6rem 1.2rem;
             border-radius: 20px;
             font-family: 'Montserrat', sans-serif;
             cursor: pointer;
             transition: all 0.3s ease;
-            outline: none;
         }
         .category-btn.active {
             background: linear-gradient(to right, var(--primary), var(--secondary));
@@ -1043,7 +1031,6 @@
         }
         .category-btn:hover {
             background: rgba(255, 255, 255, 0.2);
-            outline: none;
         }
         .moments-grid {
             display: grid;
@@ -1146,7 +1133,7 @@
             display: block;
             margin: 2rem auto 0;
             background: linear-gradient(to right, var(--primary), var(--secondary));
-            border: none;
+            border: none !important;
             color: white;
             padding: 0.8rem 1.5rem;
             border-radius: 30px;
@@ -1154,12 +1141,10 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            outline: none;
         }
         .back-to-random:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 69, 0, 0.4);
-            outline: none;
         }
         .loading-placeholder {
             position: absolute;
@@ -1259,7 +1244,7 @@
             width: 32px;
             height: 32px;
             background: linear-gradient(to right, #ff4500, #ff8c00);
-            border: none;
+            border: none !important;
             border-radius: 50%;
             color: white;
             font-size: 14px;
@@ -1269,11 +1254,9 @@
             justify-content: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             transition: all 0.3s ease;
-            outline: none;
         }
         .footer-toggle-btn:hover {
             transform: scale(1.1);
-            outline: none;
         }
         .footer-toggle-btn svg {
             width: 14px;
