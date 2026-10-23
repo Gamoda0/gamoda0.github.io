@@ -365,26 +365,34 @@
             justify-content: center;
             opacity: 0;
             transition: opacity 0.3s ease;
+            padding: 20px;
         }
         .player-frame {
             position: relative;
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
             max-width: 92vw;
+            max-height: 100%;
             transform: scale(0.95);
             transition: transform 0.3s ease;
         }
         .media-player-overlay:fullscreen {
             background: #000;
+            padding: 0;
         }
         .media-player-overlay:fullscreen .player-frame {
             max-width: none;
             width: 100%;
             height: 100%;
             transform: none;
+            gap: 0;
         }
         .media-player-overlay:fullscreen .media-player-container {
             width: 100%;
             height: 100%;
+            max-height: 100%;
             border-radius: 0;
             box-shadow: none;
         }
@@ -393,12 +401,16 @@
             aspect-ratio: auto;
             min-height: 0;
         }
+        .media-player-overlay:fullscreen .mini-menu {
+            display: none;
+        }
         .media-player-overlay:fullscreen .close-player {
             top: 14px;
             right: 14px;
         }
         .media-player-container {
-            width: min(92vw, 1100px, max(330px, calc(68vh * var(--media-ar, 1.7778))));
+            width: min(92vw, 1100px, max(330px, calc(62vh * var(--media-ar, 1.7778))));
+            max-height: calc(100vh - 130px);
             background: linear-gradient(145deg, #1e1e1e, #252525);
             border-radius: 18px;
             overflow: hidden;
@@ -411,6 +423,8 @@
         .media-player {
             position: relative;
             width: 100%;
+            flex: 1 1 auto;
+            min-height: 0;
             aspect-ratio: var(--media-ar, 1.7778);
             background: #000;
             cursor: pointer;
@@ -811,47 +825,47 @@
         .nav-arrow svg { width: 30px; height: 30px; fill: currentColor; }
 
         .mini-menu {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
             display: flex;
             align-items: center;
-            gap: 15px;
+            justify-content: center;
+            gap: 10px;
             background: rgba(10, 10, 10, 0.6);
-            padding: 10px;
-            border-radius: 16px;
+            padding: 6px 10px;
+            border-radius: 12px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 140, 0, 0.2);
             z-index: 10;
             transition: opacity 0.3s ease;
+            width: 100%;
+            max-width: 400px;
         }
         .mini-menu-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
             cursor: pointer;
             opacity: 0.5;
             transition: all 0.3s ease;
+            flex: 1;
         }
         .mini-menu-item:hover { opacity: 0.9; }
         .mini-menu-item.active {
             opacity: 1;
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
         .mini-thumb {
-            width: 80px;
-            height: 45px;
-            border-radius: 8px;
+            width: 60px;
+            height: 34px;
+            border-radius: 6px;
             overflow: hidden;
             background: #000;
-            border: 2px solid transparent;
+            border: 1px solid transparent;
             transition: border-color 0.3s ease;
         }
         .mini-menu-item.active .mini-thumb {
             border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(255, 69, 0, 0.5);
+            box-shadow: 0 0 8px rgba(255, 69, 0, 0.5);
         }
         .mini-thumb img, .mini-thumb video {
             width: 100%;
@@ -860,9 +874,9 @@
             display: block;
         }
         .mini-title {
-            font-size: 10px;
+            font-size: 9px;
             color: #fff;
-            max-width: 80px;
+            max-width: 70px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -1265,9 +1279,9 @@
             .moments-grid { grid-template-columns: repeat(2, 1fr); }
             h1 { font-size: 2rem; }
             .year-number { font-size: 2.5rem; }
-            .player-frame { max-width: 94vw; }
-            .media-player-container { width: min(94vw, max(330px, calc(62vh * var(--media-ar, 1.7778)))); }
-            .close-player { top: -46px; width: 36px; height: 36px; }
+            .player-frame { max-width: 94vw; gap: 10px; }
+            .media-player-container { width: min(94vw, max(330px, calc(58vh * var(--media-ar, 1.7778)))); max-height: calc(100vh - 110px); }
+            .close-player { top: -42px; width: 34px; height: 34px; }
             .media-controls { padding: 10px 12px; gap: 10px; flex-wrap: wrap; }
             .progress-container { order: -1; flex: 0 0 100%; }
             .time-display { flex: 1 1 auto; text-align: left; }
@@ -1282,9 +1296,9 @@
             .nav-arrow svg { width: 20px; height: 20px; }
             .nav-arrow.left { left: 10px; }
             .nav-arrow.right { right: 10px; }
-            .mini-menu { bottom: 10px; padding: 5px; gap: 10px; }
-            .mini-thumb { width: 60px; height: 34px; }
-            .mini-title { font-size: 9px; max-width: 60px; }
+            .mini-menu { max-width: 100%; padding: 5px 8px; gap: 8px; }
+            .mini-thumb { width: 50px; height: 28px; }
+            .mini-title { font-size: 8px; max-width: 50px; }
         }
         @media (max-width: 600px) {
             .years-grid { 
@@ -1371,21 +1385,6 @@
     <button class="nav-arrow left" id="prevBtn" title="Предыдущее"></button>
     <button class="nav-arrow right" id="nextBtn" title="Следующее"></button>
     
-    <div class="mini-menu" id="miniMenu">
-        <div class="mini-menu-item" id="miniPrev">
-            <div class="mini-thumb"></div>
-            <div class="mini-title"></div>
-        </div>
-        <div class="mini-menu-item active" id="miniCurrent">
-            <div class="mini-thumb"></div>
-            <div class="mini-title"></div>
-        </div>
-        <div class="mini-menu-item" id="miniNext">
-            <div class="mini-thumb"></div>
-            <div class="mini-title"></div>
-        </div>
-    </div>
-
     <div class="player-frame" id="playerFrame">
         <button class="close-player" id="closePlayerBtn" title="Закрыть"></button>
         <div class="media-player-container" id="mediaPlayerContainer">
@@ -1407,6 +1406,20 @@
                     <div class="scrub-tip" id="scrubTip">0:00</div>
                 </div>
                 <button class="ctrl-btn" id="fullscreenBtn" title="На весь экран"></button>
+            </div>
+        </div>
+        <div class="mini-menu" id="miniMenu">
+            <div class="mini-menu-item" id="miniPrev">
+                <div class="mini-thumb"></div>
+                <div class="mini-title"></div>
+            </div>
+            <div class="mini-menu-item active" id="miniCurrent">
+                <div class="mini-thumb"></div>
+                <div class="mini-title"></div>
+            </div>
+            <div class="mini-menu-item" id="miniNext">
+                <div class="mini-thumb"></div>
+                <div class="mini-title"></div>
             </div>
         </div>
     </div>
@@ -1588,6 +1601,26 @@
 
         function icon(name) {
             return `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+        }
+
+        function createVideoThumbnail(url) {
+            const video = document.createElement('video');
+            video.src = url;
+            video.muted = true;
+            video.playsInline = true;
+            video.preload = 'metadata';
+            
+            video.addEventListener('loadedmetadata', () => {
+                if (isFinite(video.duration) && video.duration > 0) {
+                    video.currentTime = video.duration / 2;
+                }
+            });
+            
+            video.addEventListener('play', () => {
+                video.pause();
+            });
+            
+            return video;
         }
 
         function shuffleArray(arr) {
@@ -2147,11 +2180,7 @@
                 item.style.animationDelay = `${index * 0.05}s`;
                 let thumb;
                 if (media.type === 'video') {
-                    thumb = document.createElement('video');
-                    thumb.muted = true;
-                    thumb.playsInline = true;
-                    thumb.preload = 'metadata';
-                    thumb.src = media.url;
+                    thumb = createVideoThumbnail(media.url);
                 } else {
                     thumb = document.createElement('img');
                     thumb.loading = 'lazy';
@@ -2202,10 +2231,14 @@
                 const thumb = item.el.querySelector('.mini-thumb');
                 const title = item.el.querySelector('.mini-title');
                 
+                thumb.innerHTML = '';
                 if (media.type === 'video') {
-                    thumb.innerHTML = `<video src="${media.url}" muted playsinline preload="metadata"></video>`;
+                    thumb.appendChild(createVideoThumbnail(media.url));
                 } else {
-                    thumb.innerHTML = `<img src="${media.url}" alt="">`;
+                    const img = document.createElement('img');
+                    img.src = media.url;
+                    img.alt = '';
+                    thumb.appendChild(img);
                 }
                 title.textContent = media.caption;
                 
@@ -2643,9 +2676,7 @@
                             }
                             item.insertBefore(mediaEl, item.firstChild);
                         } else {
-                            mediaEl = document.createElement('video');
-                            mediaEl.muted = true; mediaEl.loop = true; mediaEl.playsInline = true; mediaEl.preload = 'metadata';
-                            mediaEl.src = mediaObj.url;
+                            mediaEl = createVideoThumbnail(mediaObj.url);
                             mediaEl.onloadeddata = () => { if (placeholder) placeholder.remove(); };
                             mediaEl.onerror = () => { if (placeholder) placeholder.remove(); };
                             item.insertBefore(mediaEl, item.firstChild);
