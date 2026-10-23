@@ -249,8 +249,19 @@
             background-position: center;
         }
         
+        .stream-thumbnail img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
         .stream-info {
             padding: 1.2rem;
+            position: relative;
         }
         
         .stream-number {
@@ -286,6 +297,7 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
+            padding-right: 50px;
         }
         
         .stream-date {
@@ -324,6 +336,89 @@
             width: 100%;
             height: 100%;
             z-index: 2;
+        }
+        
+        .yt-icon-link {
+            position: absolute;
+            top: 1.2rem;
+            right: 1.2rem;
+            width: 40px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            object-fit: contain;
+        }
+        
+        .yt-icon-link:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 12px rgba(255, 0, 0, 0.6);
+        }
+        
+        .video-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .video-modal-container {
+            width: 90%;
+            max-width: 1000px;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            position: relative;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 140, 0, 0.2);
+        }
+        
+        .video-modal-container iframe {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border: none;
+        }
+        
+        .video-modal-close {
+            position: fixed;
+            top: 30px;
+            right: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 2rem;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 1010;
+            backdrop-filter: blur(4px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .video-modal-close:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: rotate(90deg) scale(1.1);
         }
         
         .loading {
@@ -443,6 +538,18 @@
             .filter-btn, .year-btn {
                 padding-top: 24px;
             }
+
+            .video-modal-container {
+                width: 95%;
+            }
+
+            .video-modal-close {
+                top: 15px;
+                right: 15px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
         }
         
         @keyframes fadeIn {
@@ -461,7 +568,7 @@
     
     <div class="container">
         <header>
-            <button class="back-button" onclick="window.history.back()">
+            <button class="back-button" onclick="goBack()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
@@ -498,6 +605,13 @@
         </div>
     </div>
 
+    <div class="video-modal-overlay" id="videoModalOverlay">
+        <button class="video-modal-close" id="closeVideoModal">&times;</button>
+        <div class="video-modal-container" id="videoModalContainer">
+            <iframe id="youtubeIframe" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const yearsToLoad = ['2022', '2023', '2024', '2025', '2026'];
@@ -510,6 +624,127 @@
             const activeEmojis = [];
             let emojiInterval = null;
             let lastAnimationFrame = null;
+
+            const modalOverlay = document.getElementById('videoModalOverlay');
+            const modalContainer = document.getElementById('videoModalContainer');
+            const iframePlayer = document.getElementById('youtubeIframe');
+            const closeModalBtn = document.getElementById('closeVideoModal');
+            let modalOpen = false;
+            let modalCloseTimer = null;
+
+            const STATUS_KEY = 'cryptoYTStatus_v3';
+            const STATUS_TTL = 604800000;
+            const CHECK_LIMIT = 6;
+            let statusCache = readStatusCache();
+            let statusCacheDirty = false;
+
+            function readStatusCache() {
+                try {
+                    const raw = localStorage.getItem(STATUS_KEY);
+                    const parsed = raw ? JSON.parse(raw) : null;
+                    return parsed && typeof parsed === 'object' ? parsed : {};
+                } catch (e) {
+                    return {};
+                }
+            }
+
+            function saveStatusCache(force) {
+                if (!statusCacheDirty && !force) return;
+                statusCacheDirty = false;
+                const ids = Object.keys(statusCache);
+                if (ids.length > 1500) {
+                    ids.sort((a, b) => (statusCache[a].t || 0) - (statusCache[b].t || 0));
+                    ids.slice(0, ids.length - 1500).forEach(id => { delete statusCache[id]; });
+                }
+                try {
+                    localStorage.setItem(STATUS_KEY, JSON.stringify(statusCache));
+                } catch (e) {}
+            }
+
+            function cachedStatus(videoId) {
+                const entry = statusCache[videoId];
+                if (!entry || typeof entry.t !== 'number') return null;
+                return { available: !!entry.a, fresh: Date.now() - entry.t < STATUS_TTL };
+            }
+
+            function createStreamEntry(number, url, date, videoId, title, year) {
+                const cached = videoId ? cachedStatus(videoId) : null;
+                const stream = {
+                    number: number,
+                    url: url,
+                    date: date,
+                    videoId: videoId,
+                    title: title,
+                    year: year,
+                    status: 'checking',
+                    statusIcon: '⏳'
+                };
+                if (cached) {
+                    stream.status = cached.available ? 'available' : 'unavailable';
+                    stream.statusIcon = cached.available ? '✅' : '❌';
+                }
+                return stream;
+            }
+
+            function openVideoModal(videoId, originalUrl) {
+                if (!videoId) {
+                    window.open(originalUrl, '_blank', 'noopener');
+                    return;
+                }
+                if (modalCloseTimer) {
+                    clearTimeout(modalCloseTimer);
+                    modalCloseTimer = null;
+                }
+                iframePlayer.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                modalOverlay.style.display = 'flex';
+                modalOpen = true;
+                setTimeout(() => {
+                    modalOverlay.style.opacity = '1';
+                    modalContainer.style.transform = 'scale(1)';
+                }, 10);
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeVideoModal() {
+                if (!modalOpen) return;
+                modalOpen = false;
+                modalOverlay.style.opacity = '0';
+                modalContainer.style.transform = 'scale(0.95)';
+                document.body.style.overflow = '';
+                if (modalCloseTimer) clearTimeout(modalCloseTimer);
+                modalCloseTimer = setTimeout(() => {
+                    modalCloseTimer = null;
+                    modalOverlay.style.display = 'none';
+                    iframePlayer.removeAttribute('src');
+                }, 300);
+            }
+
+            function goBack() {
+                if (modalOpen) {
+                    closeVideoModal();
+                    return;
+                }
+                const referrer = document.referrer;
+                if (referrer && referrer.indexOf(location.host) !== -1 && history.length > 1) {
+                    history.back();
+                    return;
+                }
+                location.href = 'index.html';
+            }
+
+            window.goBack = goBack;
+
+            closeModalBtn.addEventListener('click', closeVideoModal);
+            modalOverlay.addEventListener('click', (event) => {
+                if (event.target === modalOverlay) closeVideoModal();
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && modalOpen) closeVideoModal();
+            });
+            window.addEventListener('pagehide', () => saveStatusCache(true));
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) saveStatusCache(true);
+            });
 
             let faviconInterval = null;
             function startFaviconCycle() {
@@ -534,10 +769,11 @@
                 const emoji = document.createElement('div');
                 emoji.className = 'falling-emoji';
                 emoji.style.backgroundImage = `url('${getRandomEmoji()}')`;
-                emoji.style.left = `${Math.random() * window.innerWidth}px`;
-                emoji.style.top = '-30px';
-                emoji.style.transform = `rotate(${-30 + Math.random() * 60}deg)`;
                 const size = 20 + Math.random() * 20;
+                const range = Math.max(0, (document.documentElement.clientWidth || window.innerWidth) - size - 4);
+                emoji.style.left = `${4 + Math.random() * range}px`;
+                emoji.style.top = '0';
+                emoji.style.transform = `translate3d(0, -30px, 0) rotate(${-30 + Math.random() * 60}deg)`;
                 emoji.style.width = `${size}px`;
                 emoji.style.height = `${size}px`;
                 emojiContainer.appendChild(emoji);
@@ -558,8 +794,6 @@
             
             function animateEmojis() {
                 const viewportHeight = window.innerHeight;
-                const elementsToCheck = document.querySelectorAll('.stream-card, h1, .search-input, .filter-btn, .year-btn');
-                const elementRects = Array.from(elementsToCheck).map(el => el.getBoundingClientRect());
                 
                 for (let i = activeEmojis.length - 1; i >= 0; i--) {
                     const emoji = activeEmojis[i];
@@ -570,10 +804,13 @@
                     }
                     
                     emoji.position += emoji.speed * 2;
-                    emoji.element.style.top = `${emoji.position}px`;
-                    
                     emoji.rotation += emoji.rotationSpeed;
-                    emoji.element.style.transform = `rotate(${emoji.rotation}deg)`;
+                    emoji.element.style.transform = `translate3d(0, ${emoji.position}px, 0) rotate(${emoji.rotation}deg)`;
+                    
+                    if (!emoji.colliding && emoji.position > viewportHeight - 280) {
+                        const fade = Math.max(0, Math.min(1, (viewportHeight - emoji.position) / 280));
+                        emoji.element.style.opacity = Math.pow(fade, 1.6).toFixed(3);
+                    }
                     
                     if (emoji.position > viewportHeight) {
                         removeEmoji(emoji);
@@ -581,17 +818,10 @@
                     }
                     
                     const emojiRect = emoji.element.getBoundingClientRect();
+                    const target = document.elementFromPoint(emojiRect.left + emojiRect.width / 2, emojiRect.top + emojiRect.height / 2);
                     
-                    for (const rect of elementRects) {
-                        if (
-                            emojiRect.left < rect.right &&
-                            emojiRect.right > rect.left &&
-                            emojiRect.top < rect.bottom &&
-                            emojiRect.bottom > rect.top
-                        ) {
-                            handleCollision(emoji);
-                            break;
-                        }
+                    if (target && target.closest && target.closest('.stream-card, h1, .search-input, .filter-btn, .year-btn')) {
+                        handleCollision(emoji);
                     }
                 }
                 
@@ -603,8 +833,10 @@
             }
             
             function handleCollision(emoji) {
+                if (emoji.colliding) return;
+                emoji.colliding = true;
                 emoji.element.style.transition = 'transform 0.1s, opacity 0.5s';
-                emoji.element.style.transform = `rotate(${emoji.rotation}deg) translateY(-5px)`;
+                emoji.element.style.transform = `translate3d(0, ${emoji.position - 5}px, 0) rotate(${emoji.rotation}deg)`;
                 emoji.element.style.opacity = '0';
                 
                 setTimeout(() => {
@@ -737,6 +969,7 @@
             initSearch();
             initFilters();
             initYearFilters();
+            initCards();
             loadAllStreams();
             
             async function loadAllStreams() {
@@ -762,7 +995,6 @@
                         allStreams = allStreams.concat(streams);
                     });
                     
-                    // Удаляем дубликаты по URL
                     const uniqueStreams = [];
                     const seen = new Set();
                     allStreams.forEach(s => {
@@ -807,16 +1039,7 @@
                         const videoIdMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i);
                         const videoId = videoIdMatch ? videoIdMatch[1] : '';
                         
-                        streams.push({
-                            number,
-                            url,
-                            date,
-                            videoId,
-                            title,
-                            year,
-                            status: 'checking',
-                            statusIcon: '⏳'
-                        });
+                        streams.push(createStreamEntry(number, url, date, videoId, title, year));
                     }
                 });
                 
@@ -824,30 +1047,86 @@
             }
             
             async function checkStreamStatus(stream) {
-                if (!stream.videoId) {
+                const videoId = stream.videoId;
+                if (!videoId) {
                     stream.status = 'unavailable';
                     stream.statusIcon = '❌';
                     return;
                 }
+                const cached = cachedStatus(videoId);
+                if (cached && cached.fresh) return;
+                let res = null;
                 try {
-                    const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${stream.videoId}&format=json`);
-                    if (res.ok) {
-                        stream.status = 'available';
-                        stream.statusIcon = '✅';
-                    } else {
+                    res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`, { cache: 'no-store' });
+                } catch (e) {
+                    if (!cached) {
                         stream.status = 'unavailable';
                         stream.statusIcon = '❌';
                     }
-                } catch (e) {
+                    return;
+                }
+                if (res.ok) {
+                    stream.status = 'available';
+                    stream.statusIcon = '✅';
+                    statusCache[videoId] = { a: 1, t: Date.now() };
+                    statusCacheDirty = true;
+                } else if (res.status === 404 || res.status === 401) {
+                    stream.status = 'unavailable';
+                    stream.statusIcon = '❌';
+                    statusCache[videoId] = { a: 0, t: Date.now() };
+                    statusCacheDirty = true;
+                } else if (!cached) {
                     stream.status = 'unavailable';
                     stream.statusIcon = '❌';
                 }
             }
 
+            function refreshCard(stream) {
+                if (!stream.videoId) return;
+                const card = document.querySelector(`.stream-card[data-vid="${stream.videoId}"]`);
+                if (!card) return;
+                card.classList.remove('checking', 'available', 'unavailable');
+                card.classList.add(stream.status);
+                const icon = card.querySelector('.status-icon');
+                if (icon) {
+                    icon.className = `status-icon status-${stream.status}`;
+                    icon.textContent = stream.statusIcon;
+                }
+                const label = card.querySelector('.stream-status span:last-child');
+                if (label) {
+                    label.textContent = stream.status === 'available' ? 'Доступен' : (stream.status === 'unavailable' ? 'Недоступен' : 'Проверка...');
+                }
+            }
+
             async function checkAllStreams() {
-                await Promise.all(allStreams.map(stream => checkStreamStatus(stream)));
+                const pending = allStreams.filter(stream => {
+                    if (!stream.videoId) return false;
+                    const cached = cachedStatus(stream.videoId);
+                    return !cached || !cached.fresh;
+                });
+                if (pending.length === 0) {
+                    updateCounters();
+                    return;
+                }
+                let cursor = 0;
+                let done = 0;
+                const worker = async () => {
+                    while (cursor < pending.length) {
+                        const stream = pending[cursor++];
+                        await checkStreamStatus(stream);
+                        refreshCard(stream);
+                        done++;
+                        if (done % 10 === 0) {
+                            updateCounters();
+                            saveStatusCache();
+                        }
+                    }
+                };
+                const runners = [];
+                for (let i = 0; i < Math.min(CHECK_LIMIT, pending.length); i++) runners.push(worker());
+                await Promise.all(runners);
+                saveStatusCache();
                 updateCounters();
-                renderStreams();
             }
             
             function parseDate(dateString) {
@@ -902,7 +1181,7 @@
                 card.innerHTML = `
                     <div class="stream-number">#${stream.number}</div>
                     <div class="stream-year">${stream.year}</div>
-                    <div class="stream-thumbnail" style="background-image: url('https://img.youtube.com/vi/${stream.videoId}/mqdefault.jpg');"></div>
+                    <div class="stream-thumbnail"><img src="https://img.youtube.com/vi/${stream.videoId}/mqdefault.jpg" alt="" loading="lazy" decoding="async"></div>
                     <div class="stream-info">
                         <div class="stream-title">${stream.title || 'Название недоступно'}</div>
                         <div class="stream-date">${stream.date}</div>
@@ -910,11 +1189,33 @@
                             <span class="status-icon ${statusClass}">${stream.statusIcon}</span>
                             <span>${statusText}</span>
                         </div>
+                        <img src="assets/avatars/youtube.webp" class="yt-icon-link" alt="YouTube" title="Открыть на YouTube">
                     </div>
                     <a href="${stream.url}" class="stream-link" target="_blank"></a>
                 `;
-                
+
+                card.dataset.vid = stream.videoId || '';
+                card.dataset.url = stream.url;
+
                 streamsContainer.appendChild(card);
+            }
+
+            function initCards() {
+                const streamsContainer = document.getElementById('streamsContainer');
+                streamsContainer.addEventListener('click', (event) => {
+                    const card = event.target.closest('.stream-card');
+                    if (!card) return;
+                    const url = card.dataset.url || '';
+                    if (event.target.closest('.yt-icon-link')) {
+                        event.preventDefault();
+                        window.open(url, '_blank', 'noopener');
+                        return;
+                    }
+                    if (event.target.closest('.stream-link')) {
+                        event.preventDefault();
+                        openVideoModal(card.dataset.vid || '', url);
+                    }
+                });
             }
             
             function initSearch() {
