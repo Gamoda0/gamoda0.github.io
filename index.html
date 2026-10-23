@@ -1855,9 +1855,26 @@
         function syncPlayIcon() {
             const video = currentVideo;
             if (!video) return;
-            if (video.ended && video.currentTime >= video.duration - 0.1) setPlayIcon('replay');
+            const isAtEnd = video.duration > 0 && video.currentTime >= video.duration - 0.1;
+            if (isAtEnd) setPlayIcon('replay');
             else if (video.paused) setPlayIcon('play');
             else setPlayIcon('pause');
+        }
+
+        function checkEndState(video) {
+            if (!video || !isFinite(video.duration) || video.duration <= 0) return;
+            const isAtEnd = video.currentTime >= video.duration - 0.1;
+            if (isAtEnd) {
+                if (!video.paused && !video.ended) {
+                    video.pause();
+                }
+                mediaPlayerDiv.classList.add('video-ended');
+                showEndScreen();
+            } else {
+                hideEndScreen();
+                mediaPlayerDiv.classList.remove('video-ended');
+            }
+            syncPlayIcon();
         }
 
         function updateBufferBar() {
@@ -1963,7 +1980,7 @@
             video.addEventListener('progress', updateBufferBar);
             video.addEventListener('seeked', () => {
                 updateProgressBar();
-                syncPlayIcon();
+                checkEndState(video);
             });
             video.addEventListener('ended', () => {
                 mediaPlayerDiv.classList.add('video-ended');
@@ -2001,6 +2018,7 @@
 
         function showEndScreen() {
             if (!endScreenEl) return;
+            if (endScreenEl.classList.contains('visible') && endGridEl.children.length > 0) return;
             endGridEl.innerHTML = '';
             pickSuggestions(currentMedia ? currentMedia.url : '').forEach((media, index) => {
                 const item = document.createElement('button');
@@ -2172,6 +2190,7 @@
             progressContainer.classList.remove('dragging');
             try { progressContainer.releasePointerCapture(event.pointerId); } catch (e) {}
             updateProgressBar();
+            if (currentVideo) checkEndState(currentVideo);
         });
         progressContainer.addEventListener('pointercancel', () => {
             isDraggingProgress = false;
@@ -2239,7 +2258,12 @@
             const video = currentVideo;
             if (!video) return;
             if (video.paused) {
-                if (video.ended || (video.duration && video.currentTime >= video.duration - 0.05)) video.currentTime = 0;
+                const isAtEnd = video.duration > 0 && video.currentTime >= video.duration - 0.1;
+                if (isAtEnd) {
+                    video.currentTime = 0;
+                    hideEndScreen();
+                    mediaPlayerDiv.classList.remove('video-ended');
+                }
                 const promise = video.play();
                 if (promise && promise.catch) promise.catch(() => {});
             } else {
@@ -2305,9 +2329,11 @@
             } else if (event.key === 'ArrowRight') {
                 video.currentTime = Math.min(video.duration || 0, video.currentTime + 5);
                 updateProgressBar();
+                checkEndState(video);
             } else if (event.key === 'ArrowLeft') {
                 video.currentTime = Math.max(0, video.currentTime - 5);
                 updateProgressBar();
+                checkEndState(video);
             } else if (event.key === 'm' || event.key === 'M' || event.key === 'ь') {
                 video.muted = !video.muted;
                 isMuted = video.muted;
