@@ -199,8 +199,6 @@
             color: rgba(255, 255, 255, 0.6);
             font-weight: 400;
         }
-        
-        /* Жесткая сетка 4 колонки, чтобы ВСЕ занимало ровно 2x2 */
         .years-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -209,7 +207,6 @@
             perspective: 1000px;
             margin-bottom: 3rem;
         }
-        
         .year-card {
             position: relative;
             background: rgba(30, 30, 30, 0.4);
@@ -245,14 +242,11 @@
         .year-card[data-year="2025"]::before { background-image: url('assets/background/2025.webp'); }
         .year-card[data-year="2026"]::before { background-image: url('assets/background/2026.webp'); }
         .year-card.all-card::before { background-image: url('assets/img/5i_cryptobody.webp'); }
-        
-        /* Карточка ВСЕ занимает ровно 2 колонки и 2 строки */
         .year-card.all-card {
             grid-column: span 2;
             grid-row: span 2;
             background: rgba(255, 126, 51, 0.1);
         }
-        
         .year-card::after {
             content: '';
             position: absolute;
@@ -279,14 +273,10 @@
             z-index: 2;
             position: relative;
         }
-        
-        /* Увеличенный текст для ВСЕ */
         .all-card .year-number {
             font-size: 6rem;
-            margin-top: -20px; /* Чуть поднимаем текст, чтобы не мешал счетчикам */
+            margin-top: -20px;
         }
-        
-        /* Счетчики (всегда видимы) */
         .year-counters {
             position: absolute;
             bottom: 15px;
@@ -325,8 +315,6 @@
             font-weight: 700;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
-        
-        /* Увеличенные счетчики для ВСЕ */
         .all-card .year-counters {
             bottom: 30px;
             gap: 15px;
@@ -342,11 +330,9 @@
             height: 32px;
             font-size: 14px;
         }
-        
         .counter.total .counter-number { background: var(--all-color); color: #fff; }
         .counter.available .counter-number { background: var(--success); color: #003311; }
         .counter.unavailable .counter-number { background: var(--error); color: #fff; }
-        
         .falling-emoji-container {
             position: fixed;
             top: 0;
@@ -1181,14 +1167,11 @@
             pointer-events: none;
             filter: blur(4px);
         }
-        
-        /* Адаптивность */
         @media (max-width: 1000px) {
             .years-grid { grid-template-columns: repeat(2, 1fr); }
             .year-card.all-card { grid-column: span 2; grid-row: span 2; }
             .all-card .year-number { font-size: 4.5rem; }
         }
-        
         @media (max-width: 768px) {
             .container { padding: 1rem; padding-bottom: 80px; }
             .moments-grid { grid-template-columns: repeat(2, 1fr); }
@@ -1208,7 +1191,6 @@
             .social-icon { width: 48px; height: 48px; }
             .social-icon .platform-badge { width: 22px; height: 22px; bottom: -2px; right: -2px; }
         }
-        
         @media (max-width: 600px) {
             .years-grid { 
                 grid-template-columns: 1fr; 
@@ -1216,12 +1198,11 @@
             }
             .year-card.all-card { 
                 grid-column: span 1; 
-                grid-row: span 2; /* Оставляем большой на телефоне */
+                grid-row: span 2;
             }
             .all-card .year-number { font-size: 5rem; }
             .all-card .year-counters { bottom: 20px; }
         }
-        
         @media (max-width: 480px) {
             .moments-grid { grid-template-columns: 1fr; }
             .social-container { gap: 15px; }
@@ -1486,22 +1467,25 @@
             gifGrid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
         }
         function renderGifs() {
-            const files = shuffleArray([...gifUrls]);
-            const cols = Math.ceil(Math.sqrt(files.length));
-            const rows = Math.ceil(files.length / cols);
+            const count = 3 + Math.floor(Math.random() * 3);
+            const files = shuffleArray([...gifUrls]).slice(0, count);
             setupGridLayout(files.length);
-            const total = cols * rows;
-            for (let index = 0; index < total; index++) {
-                const src = files[index % files.length];
+            const loads = files.map((src, index) => new Promise(resolve => {
                 const tile = document.createElement('div');
                 tile.className = 'gif-tile';
                 tile.style.animationDelay = `${(index * 0.42).toFixed(2)}s`;
                 tile.style.animationDuration = `${5.4 + (index % 4) * 0.5}s`;
-                const canvas = document.createElement('canvas');
-                tile.appendChild(canvas);
+                const img = document.createElement('img');
+                img.alt = '';
+                img.decoding = 'async';
+                img.loading = 'eager';
+                img.onload = () => resolve();
+                img.onerror = () => resolve();
+                img.src = src;
+                tile.appendChild(img);
                 gifGrid.appendChild(tile);
-                renderStillFrame(canvas, src, null, 280);
-            }
+            }));
+            return Promise.all(loads);
         }
         function rotateLoadingTexts() {
             let available = [...loadingTexts];
@@ -1519,11 +1503,6 @@
             const random = emojiUrls[Math.floor(Math.random() * emojiUrls.length)];
             emojiImg.src = random;
             emojiImg.alt = '';
-        }
-        if (!document.documentElement.classList.contains('intro-skip')) {
-            renderGifs();
-            rotateLoadingTexts();
-            showRandomEmoji();
         }
 
         function getRandomEmojiUrl() {
@@ -2549,8 +2528,10 @@
             if (introSeen() || document.documentElement.classList.contains('intro-skip')) {
                 revealSite(true);
             } else {
-                preloadResources().then(hideLoader);
-                setTimeout(hideLoader, 1800);
+                const gifLoad = renderGifs();
+                rotateLoadingTexts();
+                showRandomEmoji();
+                Promise.all([gifLoad, preloadResources()]).then(hideLoader);
             }
             changeFavicon();
             setInterval(changeFavicon, 3000);
