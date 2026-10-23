@@ -372,7 +372,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
             max-width: 92vw;
             max-height: 100%;
             transform: scale(0.95);
@@ -387,12 +386,11 @@
             width: 100%;
             height: 100%;
             transform: none;
-            gap: 0;
         }
         .media-player-overlay:fullscreen .media-player-container {
             width: 100%;
             height: 100%;
-            max-height: 100%;
+            max-height: 100vh;
             border-radius: 0;
             box-shadow: none;
         }
@@ -404,13 +402,9 @@
         .media-player-overlay:fullscreen .mini-menu {
             display: none;
         }
-        .media-player-overlay:fullscreen .close-player {
-            top: 14px;
-            right: 14px;
-        }
         .media-player-container {
             width: min(92vw, 1100px, max(330px, calc(62vh * var(--media-ar, 1.7778))));
-            max-height: calc(100vh - 130px);
+            max-height: calc(100vh - 140px);
             background: linear-gradient(145deg, #1e1e1e, #252525);
             border-radius: 18px;
             overflow: hidden;
@@ -772,9 +766,9 @@
             pointer-events: none;
         }
         .close-player {
-            position: absolute;
-            top: -50px;
-            right: 0;
+            position: fixed;
+            top: 20px;
+            right: 20px;
             width: 40px;
             height: 40px;
             display: flex;
@@ -785,7 +779,7 @@
             border-radius: 50%;
             color: #fff;
             cursor: pointer;
-            z-index: 10;
+            z-index: 1001;
             backdrop-filter: blur(4px);
             transition: all 0.2s ease;
         }
@@ -825,19 +819,22 @@
         .nav-arrow svg { width: 30px; height: 30px; fill: currentColor; }
 
         .mini-menu {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            background: rgba(10, 10, 10, 0.6);
+            background: rgba(10, 10, 10, 0.7);
             padding: 6px 10px;
             border-radius: 12px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 140, 0, 0.2);
-            z-index: 10;
+            z-index: 1001;
             transition: opacity 0.3s ease;
-            width: 100%;
-            max-width: 400px;
+            max-width: 90vw;
         }
         .mini-menu-item {
             display: flex;
@@ -848,6 +845,7 @@
             opacity: 0.5;
             transition: all 0.3s ease;
             flex: 1;
+            min-width: 60px;
         }
         .mini-menu-item:hover { opacity: 0.9; }
         .mini-menu-item.active {
@@ -862,6 +860,9 @@
             background: #000;
             border: 1px solid transparent;
             transition: border-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .mini-menu-item.active .mini-thumb {
             border-color: var(--primary);
@@ -876,7 +877,7 @@
         .mini-title {
             font-size: 9px;
             color: #fff;
-            max-width: 70px;
+            max-width: 60px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -1279,9 +1280,9 @@
             .moments-grid { grid-template-columns: repeat(2, 1fr); }
             h1 { font-size: 2rem; }
             .year-number { font-size: 2.5rem; }
-            .player-frame { max-width: 94vw; gap: 10px; }
-            .media-player-container { width: min(94vw, max(330px, calc(58vh * var(--media-ar, 1.7778)))); max-height: calc(100vh - 110px); }
-            .close-player { top: -42px; width: 34px; height: 34px; }
+            .player-frame { max-width: 94vw; }
+            .media-player-container { width: min(94vw, max(330px, calc(58vh * var(--media-ar, 1.7778)))); max-height: calc(100vh - 120px); }
+            .close-player { top: 15px; right: 15px; width: 34px; height: 34px; }
             .media-controls { padding: 10px 12px; gap: 10px; flex-wrap: wrap; }
             .progress-container { order: -1; flex: 0 0 100%; }
             .time-display { flex: 1 1 auto; text-align: left; }
@@ -1296,7 +1297,7 @@
             .nav-arrow svg { width: 20px; height: 20px; }
             .nav-arrow.left { left: 10px; }
             .nav-arrow.right { right: 10px; }
-            .mini-menu { max-width: 100%; padding: 5px 8px; gap: 8px; }
+            .mini-menu { bottom: 15px; padding: 5px 8px; gap: 8px; }
             .mini-thumb { width: 50px; height: 28px; }
             .mini-title { font-size: 8px; max-width: 50px; }
         }
@@ -1382,11 +1383,11 @@
     </div>
 </div>
 <div class="media-player-overlay" id="mediaPlayerOverlay">
+    <button class="close-player" id="closePlayerBtn" title="Закрыть"></button>
     <button class="nav-arrow left" id="prevBtn" title="Предыдущее"></button>
     <button class="nav-arrow right" id="nextBtn" title="Следующее"></button>
     
     <div class="player-frame" id="playerFrame">
-        <button class="close-player" id="closePlayerBtn" title="Закрыть"></button>
         <div class="media-player-container" id="mediaPlayerContainer">
             <div class="media-player" id="mediaPlayer"></div>
             <div class="media-controls" id="mediaControls">
@@ -1408,19 +1409,20 @@
                 <button class="ctrl-btn" id="fullscreenBtn" title="На весь экран"></button>
             </div>
         </div>
-        <div class="mini-menu" id="miniMenu">
-            <div class="mini-menu-item" id="miniPrev">
-                <div class="mini-thumb"></div>
-                <div class="mini-title"></div>
-            </div>
-            <div class="mini-menu-item active" id="miniCurrent">
-                <div class="mini-thumb"></div>
-                <div class="mini-title"></div>
-            </div>
-            <div class="mini-menu-item" id="miniNext">
-                <div class="mini-thumb"></div>
-                <div class="mini-title"></div>
-            </div>
+    </div>
+    
+    <div class="mini-menu" id="miniMenu">
+        <div class="mini-menu-item" id="miniPrev">
+            <div class="mini-thumb"></div>
+            <div class="mini-title"></div>
+        </div>
+        <div class="mini-menu-item active" id="miniCurrent">
+            <div class="mini-thumb"></div>
+            <div class="mini-title"></div>
+        </div>
+        <div class="mini-menu-item" id="miniNext">
+            <div class="mini-thumb"></div>
+            <div class="mini-title"></div>
         </div>
     </div>
 </div>
@@ -1568,6 +1570,8 @@
         let currentIndex = 0;
         let endScreenEl = null;
         let endGridEl = null;
+        
+        const thumbCache = new Map();
 
         const gifUrls = [
             "assets/gif/1gif_eating.webp","assets/gif/2gif_pediknavalny.webp","assets/gif/3gif_posral.webp",
@@ -1602,7 +1606,7 @@
         function icon(name) {
             return `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
         }
-
+        
         function createVideoThumbnail(url) {
             const video = document.createElement('video');
             video.src = url;
@@ -1621,6 +1625,21 @@
             });
             
             return video;
+        }
+        
+        function getThumbElement(media) {
+            if (thumbCache.has(media.url)) {
+                return thumbCache.get(media.url);
+            }
+            let el;
+            if (media.type === 'video') {
+                el = createVideoThumbnail(media.url);
+            } else {
+                el = document.createElement('img');
+                el.src = media.url;
+            }
+            thumbCache.set(media.url, el);
+            return el;
         }
 
         function shuffleArray(arr) {
@@ -2220,25 +2239,22 @@
             const nextIndex = (currentIndex + 1) % total;
             
             const items = [
-                { index: prevIndex, el: miniPrev },
-                { index: currentIndex, el: miniCurrent },
-                { index: nextIndex, el: miniNext }
+                { index: prevIndex, el: miniPrev, media: mediaFiles[prevIndex] },
+                { index: currentIndex, el: miniCurrent, media: mediaFiles[currentIndex] },
+                { index: nextIndex, el: miniNext, media: mediaFiles[nextIndex] }
             ];
             
             items.forEach(item => {
-                const media = mediaFiles[item.index];
+                const media = item.media;
                 if (!media) return;
                 const thumb = item.el.querySelector('.mini-thumb');
                 const title = item.el.querySelector('.mini-title');
                 
-                thumb.innerHTML = '';
-                if (media.type === 'video') {
-                    thumb.appendChild(createVideoThumbnail(media.url));
-                } else {
-                    const img = document.createElement('img');
-                    img.src = media.url;
-                    img.alt = '';
-                    thumb.appendChild(img);
+                if (thumb.dataset.url !== media.url) {
+                    thumb.innerHTML = '';
+                    const el = getThumbElement(media);
+                    thumb.appendChild(el);
+                    thumb.dataset.url = media.url;
                 }
                 title.textContent = media.caption;
                 
