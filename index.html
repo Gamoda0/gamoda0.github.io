@@ -69,6 +69,9 @@
             align-items: center;
             justify-content: center;
         }
+        .intro-skip #loader-screen {
+            display: none !important;
+        }
         @keyframes animatedGradient {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -106,10 +109,26 @@
             opacity: 0.15;
             pointer-events: none;
         }
-        .gif-grid img {
+        .gif-grid img,
+        .gif-grid canvas {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
+        }
+        .gif-tile {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.25);
+            transform-style: preserve-3d;
+            animation: tileFlip 6s ease-in-out infinite;
+            will-change: transform;
+        }
+        @keyframes tileFlip {
+            0%, 55%, 100% { transform: perspective(800px) rotateY(0deg) scale(1); }
+            70% { transform: perspective(800px) rotateY(88deg) scale(1.06); }
+            85% { transform: perspective(800px) rotateY(0deg) scale(1.02); }
         }
         .spinner {
             position: relative;
@@ -361,119 +380,357 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        .media-player-container {
-            width: 85%;
-            max-width: 1000px;
-            background: linear-gradient(145deg, #1e1e1e, #252525);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+        .player-frame {
+            position: relative;
+            display: flex;
+            max-width: 92vw;
             transform: scale(0.95);
             transition: transform 0.3s ease;
-            border: 1px solid rgba(255, 140, 0, 0.2);
+        }
+        .media-player-overlay:fullscreen {
+            background: #000;
+        }
+        .media-player-overlay:fullscreen .player-frame {
+            max-width: none;
+            width: 100%;
+            height: 100%;
+            transform: none;
+        }
+        .media-player-overlay:fullscreen .media-player-container {
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            box-shadow: none;
+        }
+        .media-player-overlay:fullscreen .media-player {
+            flex: 1 1 auto;
+            aspect-ratio: auto;
+            min-height: 0;
+        }
+        .media-player-overlay:fullscreen .close-player {
+            top: 14px;
+            right: 14px;
+        }
+        .media-player-container {
+            width: min(92vw, 1100px, max(330px, calc(68vh * var(--media-ar, 1.7778))));
+            background: linear-gradient(145deg, #1e1e1e, #252525);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 140, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            container-type: inline-size;
         }
         .media-player {
+            position: relative;
             width: 100%;
+            aspect-ratio: var(--media-ar, 1.7778);
             background: #000;
             cursor: pointer;
+            overflow: hidden;
         }
         .media-player video,
         .media-player img {
             width: 100%;
+            height: 100%;
             display: block;
-            max-height: 70vh;
             background: #000;
             object-fit: contain;
         }
-        .media-controls {
-            padding: 1rem 1.5rem;
-            background: rgba(20, 20, 20, 0.95);
+        .center-play {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 78px;
+            height: 78px;
+            margin: -39px 0 0 -39px;
+            border-radius: 50%;
+            background: rgba(10, 10, 10, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(6px);
+            color: #fff;
             display: flex;
             align-items: center;
-            gap: 1rem;
-            border-top: 1px solid rgba(255, 140, 0, 0.2);
+            justify-content: center;
+            pointer-events: none;
+            z-index: 3;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
         }
-        .media-controls button {
-            background: rgba(255, 140, 0, 0.2);
+        .center-play svg {
+            width: 32px;
+            height: 32px;
+            fill: currentColor;
+        }
+        .media-controls {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 16px;
+            background: linear-gradient(180deg, rgba(26, 26, 26, 0.94), rgba(16, 16, 16, 0.99));
+            border-top: 1px solid rgba(255, 140, 0, 0.18);
+        }
+        .ctrl-btn {
+            flex: 0 0 auto;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0.5rem;
             border-radius: 50%;
-            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+        }
+        .ctrl-btn svg {
+            width: 19px;
+            height: 19px;
+            fill: currentColor;
+            display: block;
+        }
+        .ctrl-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+            color: #fff;
+            transform: scale(1.06);
+        }
+        .play-btn {
+            width: 46px;
+            height: 46px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(255, 90, 0, 0.35);
+        }
+        .play-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+        .play-btn:hover {
+            background: linear-gradient(135deg, #ff5c1a, #ffa226);
+            box-shadow: 0 8px 24px rgba(255, 110, 0, 0.5);
+        }
+        .time-display {
+            flex: 0 0 auto;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: rgba(255, 255, 255, 0.72);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .progress-container {
+            position: relative;
+            flex: 1 1 auto;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            touch-action: none;
+            min-width: 40px;
+        }
+        .progress-container::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            transition: height 0.18s ease;
+        }
+        .progress-container:hover::before,
+        .progress-container.dragging::before {
+            height: 6px;
+        }
+        .progress-buffer {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 4px;
+            width: 0;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.24);
+            transition: height 0.18s ease;
+        }
+        .progress-bar {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 4px;
+            width: 0;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 12px rgba(255, 110, 0, 0.45);
+            transition: height 0.18s ease;
+        }
+        .progress-container:hover .progress-buffer,
+        .progress-container:hover .progress-bar,
+        .progress-container.dragging .progress-buffer,
+        .progress-container.dragging .progress-bar {
+            height: 6px;
+        }
+        .progress-thumb {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 13px;
+            height: 13px;
+            margin-left: -6.5px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.85), 0 2px 8px rgba(0, 0, 0, 0.6);
+            transform: translateY(-50%) scale(0);
+            transition: transform 0.16s ease;
+            pointer-events: none;
+        }
+        .progress-container:hover .progress-thumb,
+        .progress-container.dragging .progress-thumb {
+            transform: translateY(-50%) scale(1);
+        }
+        .scrub-tip {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            transform: translateX(-50%);
+            padding: 3px 7px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.88);
+            border: 1px solid rgba(255, 140, 0, 0.35);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+        .progress-container:hover .scrub-tip,
+        .progress-container.dragging .scrub-tip {
+            opacity: 1;
+        }
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 0 0 auto;
+        }
+        .volume-control .ctrl-btn {
+            width: 34px;
+            height: 34px;
+            background: transparent;
+        }
+        .volume-control .ctrl-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .volume-slider {
+            position: relative;
+            width: 84px;
+            min-width: 44px;
+            flex: 0 1 auto;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            touch-action: none;
+        }
+        .volume-slider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.16);
+        }
+        .volume-level {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 4px;
+            width: 100%;
+            border-radius: 999px;
+            background: #fff;
+        }
+        .volume-thumb {
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 10px;
+            height: 10px;
+            margin-left: -5px;
+            border-radius: 50%;
+            background: #fff;
+            transform: translateY(-50%);
+            box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.5);
+            pointer-events: none;
+        }
+        .close-player {
+            position: absolute;
+            top: -50px;
+            right: 0;
             width: 40px;
             height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        .media-controls button:hover {
-            background: rgba(255, 140, 0, 0.4);
-            transform: scale(1.1);
-        }
-        .progress-container {
-            flex-grow: 1;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            border-radius: 3px;
-            width: 0%;
-        }
-        .time-display {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-            min-width: 120px;
-            text-align: center;
-            font-family: monospace;
-        }
-        .volume-control {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            width: 120px;
-        }
-        .volume-slider {
-            flex-grow: 1;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        .volume-level {
-            height: 100%;
-            background: white;
-            border-radius: 2px;
-            width: 100%;
-        }
-        .close-player {
-            position: absolute;
-            top: 15px;
-            right: 15px;
             background: rgba(0, 0, 0, 0.7);
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 50%;
-            font-size: 1.5rem;
+            color: #fff;
             cursor: pointer;
             z-index: 10;
             backdrop-filter: blur(4px);
             transition: all 0.2s ease;
         }
+        .close-player svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
         .close-player:hover {
             background: var(--primary);
             transform: rotate(90deg) scale(1.1);
+        }
+        @container (max-width: 430px) {
+            .media-controls {
+                gap: 10px;
+                padding: 10px 12px;
+            }
+            .volume-slider {
+                width: 64px;
+            }
+            .time-display {
+                font-size: 11px;
+            }
+        }
+        @container (max-width: 375px) {
+            .volume-slider {
+                width: 52px;
+                min-width: 52px;
+            }
+            .media-controls {
+                gap: 8px;
+                padding: 9px 10px;
+            }
+            .time-display {
+                font-size: 10px;
+            }
+            .ctrl-btn {
+                width: 30px;
+                height: 30px;
+            }
+            .play-btn {
+                width: 38px;
+                height: 38px;
+            }
+            .play-btn svg {
+                width: 18px;
+                height: 18px;
+            }
         }
         .random-moment {
             margin-top: 4rem;
@@ -599,7 +856,8 @@
             border-color: rgba(255, 140, 0, 0.3);
         }
         .moment-item img,
-        .moment-item video {
+        .moment-item video,
+        .moment-item canvas {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -614,6 +872,35 @@
             padding: 1rem;
             color: white;
             font-size: 0.9rem;
+            z-index: 2;
+        }
+        .moment-type {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 3;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.72);
+            border: 1px solid rgba(255, 140, 0, 0.4);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            line-height: 1.5;
+            pointer-events: none;
+        }
+        .moment-anim {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            z-index: 1;
+            pointer-events: none;
         }
         .play-icon {
             position: absolute;
@@ -753,7 +1040,7 @@
             right: 30px;
             bottom: 30px;
             z-index: 1001;
-            transition: bottom 0.4s ease, filter 0.2s ease, opacity 0.2s ease;
+            transition: bottom 0.4s ease;
         }
         .footer-toggle-btn {
             width: 32px;
@@ -773,6 +1060,21 @@
         .footer-toggle-btn:hover {
             transform: scale(1.1);
         }
+        .footer-toggle-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        .footer-toggle-btn.is-up svg {
+            transform: rotate(180deg);
+        }
+        .footer-toggle-wrapper.is-hidden {
+            opacity: 0;
+            pointer-events: none;
+            filter: blur(4px);
+        }
         
         /* Адаптивность */
         @media (max-width: 1000px) {
@@ -786,13 +1088,16 @@
             .moments-grid { grid-template-columns: repeat(2, 1fr); }
             h1 { font-size: 2rem; }
             .year-number { font-size: 2.5rem; }
-            .media-player-container { width: 95%; }
-            .media-controls { padding: 0.5rem; gap: 0.5rem; flex-wrap: wrap; }
-            .media-controls button { width: 32px; height: 32px; font-size: 1rem; }
-            .time-display { min-width: 80px; font-size: 0.8rem; }
-            .volume-control { width: 100px; }
-            .progress-container { order: 1; width: 100%; margin-top: 5px; }
-            .time-display { order: 2; width: 100%; text-align: center; }
+            .player-frame { max-width: 94vw; }
+            .media-player-container { width: min(94vw, max(330px, calc(62vh * var(--media-ar, 1.7778)))); }
+            .close-player { top: -46px; width: 36px; height: 36px; }
+            .media-controls { padding: 10px 12px; gap: 10px; flex-wrap: wrap; }
+            .progress-container { order: -1; flex: 0 0 100%; }
+            .time-display { flex: 1 1 auto; text-align: left; }
+            .volume-slider { width: 60px; }
+            .play-btn { width: 42px; height: 42px; }
+            .center-play { width: 64px; height: 64px; margin: -32px 0 0 -32px; }
+            .center-play svg { width: 26px; height: 26px; }
             .social-container { gap: 20px; }
             .social-icon { width: 48px; height: 48px; }
             .social-icon .platform-badge { width: 22px; height: 22px; bottom: -2px; right: -2px; }
@@ -818,8 +1123,16 @@
             .social-icon .platform-badge { width: 20px; height: 20px; }
         }
     </style>
+    <script>
+        try {
+            if (sessionStorage.getItem('cryptoIntroShown') === '1') {
+                document.documentElement.classList.add('intro-skip');
+            }
+        } catch (e) {}
+    </script>
 </head>
 <body>
+<div class="falling-emoji-container" id="emojiContainer"></div>
 <div id="loader-screen">
     <div class="stripe-overlay"></div>
     <div class="gif-grid" id="gifGrid"></div>
@@ -865,7 +1178,7 @@
             </div>
         </a>
         <a href="https://discord.gg/HgDNU5rBZE" class="social-icon" target="_blank" rel="noopener noreferrer">
-            <img src="assets/avatars/discord_avatar.png" class="avatar-img" alt="">
+            <img src="assets/avatars/discord_avatar.webp" class="avatar-img" alt="" onerror="this.onerror=null;this.src='assets/avatars/discord_avatar.png'">
             <div class="platform-badge">
                 <img src="assets/avatars/discord.webp" alt="">
             </div>
@@ -873,20 +1186,27 @@
     </div>
 </div>
 <div class="media-player-overlay" id="mediaPlayerOverlay">
-    <div class="media-player-container">
-        <button class="close-player" id="closePlayerBtn">&times;</button>
-        <div class="media-player" id="mediaPlayer"></div>
-        <div class="media-controls" id="mediaControls">
-            <button id="playPauseBtn">▶</button>
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-            <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
-            <div class="volume-control">
-                <button id="muteBtn">🔊</button>
-                <div class="volume-slider" id="volumeSlider">
-                    <div class="volume-level" id="volumeLevel"></div>
+    <div class="player-frame" id="playerFrame">
+        <button class="close-player" id="closePlayerBtn" title="Закрыть"></button>
+        <div class="media-player-container" id="mediaPlayerContainer">
+            <div class="media-player" id="mediaPlayer"></div>
+            <div class="media-controls" id="mediaControls">
+                <button class="ctrl-btn play-btn" id="playPauseBtn" title="Смотреть"></button>
+                <div class="volume-control">
+                    <button class="ctrl-btn" id="muteBtn" title="Выключить звук"></button>
+                    <div class="volume-slider" id="volumeSlider">
+                        <div class="volume-level" id="volumeLevel"></div>
+                        <div class="volume-thumb" id="volumeThumb"></div>
+                    </div>
                 </div>
+                <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-buffer" id="progressBuffer"></div>
+                    <div class="progress-bar" id="progressBar"></div>
+                    <div class="progress-thumb" id="progressThumb"></div>
+                    <div class="scrub-tip" id="scrubTip">0:00</div>
+                </div>
+                <button class="ctrl-btn" id="fullscreenBtn" title="На весь экран"></button>
             </div>
         </div>
     </div>
@@ -998,6 +1318,14 @@
         const muteBtn = document.getElementById('muteBtn');
         const volumeSlider = document.getElementById('volumeSlider');
         const volumeLevel = document.getElementById('volumeLevel');
+        const volumeThumb = document.getElementById('volumeThumb');
+        const mediaPlayerContainer = document.getElementById('mediaPlayerContainer');
+        const playerFrame = document.getElementById('playerFrame');
+        const emojiContainer = document.getElementById('emojiContainer');
+        const progressBuffer = document.getElementById('progressBuffer');
+        const progressThumb = document.getElementById('progressThumb');
+        const scrubTip = document.getElementById('scrubTip');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
         const footer = document.getElementById('footer');
         const favicon = document.getElementById('favicon');
 
@@ -1011,11 +1339,20 @@
         let activeEmojis = [];
         let animationFrameId = null;
         let lazyObserver = null;
+        let loaderHidden = false;
+        let loadingTextTimer = null;
+        let playerCloseTimer = null;
+        let playerOpen = false;
+        let progressTicker = null;
+        let centerPlayEl = null;
 
         const gifUrls = [
             "assets/gif/1gif_eating.webp","assets/gif/2gif_pediknavalny.webp","assets/gif/3gif_posral.webp",
             "assets/gif/4gif_smile.webp","assets/gif/5gif_sosali.webp","assets/gif/6gif_storm.webp",
-            "assets/gif/7gif_begit.webp","assets/gif/8gif_razyob.webp"
+            "assets/gif/7gif_begit.webp","assets/gif/8gif_razyob.webp","assets/gif/9gif_booo.webp",
+            "assets/gif/10gif_crypto_gnom.webp","assets/gif/11gif_doomaem.webp","assets/gif/12gif_konfetka.webp",
+            "assets/gif/13gif_kushaet.webp","assets/gif/14gif_poletel.webp","assets/gif/15gif_shoot.webp",
+            "assets/gif/16gif_tabletki.webp","assets/gif/17gif_talking.webp"
         ];
         const loadingTexts = [
             "Запускаем параворлд…", "Баними Ховута…", "Заряжаем 12 атмосфер…",
@@ -1040,14 +1377,22 @@
             gifGrid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
         }
         function renderGifs() {
-            const shuffled = shuffleArray([...gifUrls]);
-            setupGridLayout(shuffled.length);
-            shuffled.forEach(src => {
-                const img = document.createElement('img');
-                img.src = src;
-                img.alt = '';
-                gifGrid.appendChild(img);
-            });
+            const files = shuffleArray([...gifUrls]);
+            const cols = Math.ceil(Math.sqrt(files.length));
+            const rows = Math.ceil(files.length / cols);
+            setupGridLayout(files.length);
+            const total = cols * rows;
+            for (let index = 0; index < total; index++) {
+                const src = files[index % files.length];
+                const tile = document.createElement('div');
+                tile.className = 'gif-tile';
+                tile.style.animationDelay = `${(index * 0.42).toFixed(2)}s`;
+                tile.style.animationDuration = `${5.4 + (index % 4) * 0.5}s`;
+                const canvas = document.createElement('canvas');
+                tile.appendChild(canvas);
+                gifGrid.appendChild(tile);
+                renderStillFrame(canvas, src, null, 280);
+            }
         }
         function rotateLoadingTexts() {
             let available = [...loadingTexts];
@@ -1058,16 +1403,19 @@
                 available.splice(idx, 1);
             };
             update();
-            setInterval(update, 1250);
+            if (loadingTextTimer) clearInterval(loadingTextTimer);
+            loadingTextTimer = setInterval(update, 1250);
         }
         function showRandomEmoji() {
             const random = emojiUrls[Math.floor(Math.random() * emojiUrls.length)];
             emojiImg.src = random;
             emojiImg.alt = '';
         }
-        renderGifs();
-        rotateLoadingTexts();
-        showRandomEmoji();
+        if (!document.documentElement.classList.contains('intro-skip')) {
+            renderGifs();
+            rotateLoadingTexts();
+            showRandomEmoji();
+        }
 
         function getRandomEmojiUrl() {
             return emojiUrls[Math.floor(Math.random() * emojiUrls.length)];
@@ -1082,18 +1430,32 @@
                 animationFrameId = null;
             }
         }
+        function spawnRange(size) {
+            const width = document.documentElement.clientWidth || window.innerWidth;
+            return Math.max(0, width - size - 4);
+        }
+
+        function fadeAlpha(position, height) {
+            const fadeZone = 280;
+            const start = height - fadeZone;
+            if (position <= start) return 1;
+            const t = Math.max(0, Math.min(1, (height - position) / fadeZone));
+            return Math.pow(t, 1.6);
+        }
+
         function createFallingEmoji() {
             if (document.hidden) return;
+            if (activeEmojis.length >= 14) return;
             const emoji = document.createElement('div');
             emoji.className = 'falling-emoji';
             emoji.style.backgroundImage = `url('${getRandomEmojiUrl()}')`;
-            emoji.style.left = `${Math.random() * window.innerWidth}px`;
-            emoji.style.top = '-30px';
-            emoji.style.transform = `rotate(${-30 + Math.random() * 60}deg)`;
             const size = 20 + Math.random() * 20;
+            emoji.style.left = `${4 + Math.random() * spawnRange(size)}px`;
+            emoji.style.top = '0';
+            emoji.style.transform = `translate3d(0, -30px, 0) rotate(${-30 + Math.random() * 60}deg)`;
             emoji.style.width = `${size}px`;
             emoji.style.height = `${size}px`;
-            document.body.appendChild(emoji);
+            emojiContainer.appendChild(emoji);
             const data = {
                 element: emoji,
                 speed: 0.5 + Math.random() * 2.5,
@@ -1111,11 +1473,10 @@
                 const e = activeEmojis[i];
                 if (e.removed) { activeEmojis.splice(i,1); continue; }
                 e.position += e.speed * 2;
-                e.element.style.top = `${e.position}px`;
                 e.rotation += e.rotSpeed;
-                e.element.style.transform = `rotate(${e.rotation}deg)`;
+                e.element.style.transform = `translate3d(0, ${e.position}px, 0) rotate(${e.rotation}deg)`;
                 if (e.position > window.innerHeight) removeEmoji(e);
-                else if (e.position > window.innerHeight - 100) e.element.style.opacity = (window.innerHeight - e.position) / 100;
+                else if (e.position > window.innerHeight - 280) e.element.style.opacity = fadeAlpha(e.position, window.innerHeight).toFixed(3);
             }
             if (activeEmojis.length > 0) animationFrameId = requestAnimationFrame(animateEmojis);
             else animationFrameId = null;
@@ -1126,16 +1487,16 @@
             if (emojiData.element.parentNode) emojiData.element.parentNode.removeChild(emojiData.element);
         }
         function startEmojiSystem() {
+            if (!loaderHidden) return;
             if (emojiInterval) clearInterval(emojiInterval);
             removeAllEmojis();
-            emojiInterval = setInterval(createFallingEmoji, 700 + Math.random() * 300);
+            emojiInterval = setInterval(createFallingEmoji, 900 + Math.random() * 300);
             for (let i=0; i<5; i++) setTimeout(createFallingEmoji, i*200);
         }
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) { if (emojiInterval) clearInterval(emojiInterval); if (animationFrameId) cancelAnimationFrame(animationFrameId); }
             else startEmojiSystem();
         });
-        startEmojiSystem();
 
         function buildYearsGrid() {
             yearsGrid.innerHTML = '';
@@ -1167,109 +1528,191 @@
             });
         }
 
-        async function updateDynamicCounters() {
-            const years = [2022, 2023, 2024, 2025, 2026];
-            const newYearsData = years.map(y => ({ year: y, total: 0, available: 0, unavailable: 0 }));
-            const allData = { year: 0, total: 0, available: 0, unavailable: 0, all: true };
-            const allVideos = [];
+        const YEAR_LIST = [2022, 2023, 2024, 2025, 2026];
+        const INDEX_KEY = 'cryptoStreamIndex_v3';
+        const INDEX_TTL = 600000;
+        const STATUS_KEY = 'cryptoYTStatus_v3';
+        const STATUS_TTL = 604800000;
+        const CHECK_LIMIT = 6;
 
+        function readJSON(key, fallback) {
             try {
-                const fetchPromises = years.map(y => fetch(`${y}.html`).then(res => {
-                    if (!res.ok) return ''; 
-                    return res.text();
-                }).catch(() => ''));
-                
-                const texts = await Promise.all(fetchPromises);
-
-                const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
-
-                texts.forEach((text, index) => {
-                    const year = years[index];
-                    const matches = text.match(regex) || [];
-                    const uniqueMatches = [...new Set(matches)];
-
-                    uniqueMatches.forEach(url => {
-                        const videoIdMatch = url.match(/([a-zA-Z0-9_-]{11})$/);
-                        if (videoIdMatch) {
-                            allVideos.push({ year, videoId: videoIdMatch[1] });
-                            const yd = newYearsData.find(d => d.year === year);
-                            yd.total++;
-                            allData.total++;
-                        }
-                    });
-                });
-
-                yearsData.forEach(d => {
-                    if (d.all) {
-                        d.total = allData.total;
-                        d.available = '...';
-                        d.unavailable = '...';
-                    } else {
-                        const nd = newYearsData.find(x => x.year === d.year);
-                        d.total = nd.total;
-                        d.available = '...';
-                        d.unavailable = '...';
-                    }
-                });
-                
-                updateDOMCounters(yearsData);
-
-                let processed = 0;
-                const checkPromises = allVideos.map(async (v) => {
-                    const cacheKey = `yt_status_${v.videoId}`;
-                    let isAvailable = false;
-                    const cached = localStorage.getItem(cacheKey);
-                    
-                    if (cached !== null) {
-                        const parsed = JSON.parse(cached);
-                        if (Date.now() - parsed.timestamp < 86400000) {
-                            isAvailable = parsed.isAvailable;
-                        } else {
-                            localStorage.removeItem(cacheKey);
-                        }
-                    }
-
-                    if (cached === null || Date.now() - JSON.parse(cached).timestamp >= 86400000) {
-                        try {
-                            const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${v.videoId}&format=json`);
-                            isAvailable = res.ok;
-                        } catch (e) {
-                            isAvailable = false;
-                        }
-                        localStorage.setItem(cacheKey, JSON.stringify({ isAvailable, timestamp: Date.now() }));
-                    }
-
-                    if (isAvailable) {
-                        const yd = newYearsData.find(d => d.year === v.year);
-                        if (yd) yd.available++;
-                        allData.available++;
-                    } else {
-                        const yd = newYearsData.find(d => d.year === v.year);
-                        if (yd) yd.unavailable++;
-                        allData.unavailable++;
-                    }
-                    processed++;
-
-                    if (processed % 5 === 0 || processed === allVideos.length) {
-                        yearsData.forEach(d => {
-                            if (d.all) {
-                                d.available = allData.available;
-                                d.unavailable = allData.unavailable;
-                            } else {
-                                const nd = newYearsData.find(x => x.year === d.year);
-                                d.available = nd.available;
-                                d.unavailable = nd.unavailable;
-                            }
-                        });
-                        updateDOMCounters(yearsData);
-                    }
-                });
-
-                await Promise.all(checkPromises);
-            } catch (error) {
-                console.error("Failed to load dynamic counters:", error);
+                const raw = localStorage.getItem(key);
+                if (!raw) return fallback;
+                const parsed = JSON.parse(raw);
+                return parsed === null || parsed === undefined ? fallback : parsed;
+            } catch (e) {
+                return fallback;
             }
         }
+
+        function writeJSON(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {}
+        }
+
+        const statusStore = readJSON(STATUS_KEY, {});
+        let statusStoreDirty = false;
+
+        function persistStatuses() {
+            if (!statusStoreDirty) return;
+            statusStoreDirty = false;
+            writeJSON(STATUS_KEY, statusStore);
+        }
+
+        function statusEntry(videoId) {
+            const entry = statusStore[videoId];
+            if (!entry || typeof entry.a !== 'number' || typeof entry.t !== 'number') return null;
+            return entry;
+        }
+
+        function readIndexSnapshot() {
+            const snapshot = readJSON(INDEX_KEY, null);
+            if (!snapshot || !snapshot.years || typeof snapshot.t !== 'number') return null;
+            return snapshot;
+        }
+
+        async function parseYearPage(year) {
+            try {
+                const res = await fetch(`${year}.html`);
+                if (!res.ok) return null;
+                const text = await res.text();
+                const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/g;
+                const ids = [];
+                const seen = {};
+                let match;
+                while ((match = regex.exec(text)) !== null) {
+                    const videoId = match[1];
+                    if (seen[videoId]) continue;
+                    seen[videoId] = true;
+                    ids.push(videoId);
+                }
+                return ids;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function loadIndexSnapshot() {
+            const cached = readIndexSnapshot();
+            if (cached && Date.now() - cached.t < INDEX_TTL) return cached;
+            const parsed = await Promise.all(YEAR_LIST.map(year => parseYearPage(year)));
+            const years = {};
+            parsed.forEach((ids, index) => {
+                if (ids) years[YEAR_LIST[index]] = ids;
+            });
+            const merged = Object.assign({}, cached ? cached.years : null, years);
+            if (Object.keys(merged).length === 0) return cached;
+            const snapshot = { t: Date.now(), years: merged };
+            writeJSON(INDEX_KEY, snapshot);
+            return snapshot;
+        }
+
+        function computeCounters(snapshot) {
+            const perYear = {};
+            const total = { total: 0, available: 0, unavailable: 0, unknown: 0 };
+            YEAR_LIST.forEach(year => {
+                const ids = snapshot.years[year] || [];
+                const result = { total: ids.length, available: 0, unavailable: 0, unknown: 0 };
+                ids.forEach(videoId => {
+                    const entry = statusEntry(videoId);
+                    if (!entry) result.unknown++;
+                    else if (entry.a === 1) result.available++;
+                    else result.unavailable++;
+                });
+                total.total += result.total;
+                total.available += result.available;
+                total.unavailable += result.unavailable;
+                total.unknown += result.unknown;
+                perYear[year] = result;
+            });
+            return { perYear, total };
+        }
+
+        function paintCounters(snapshot) {
+            const counters = computeCounters(snapshot);
+            yearsData.forEach(data => {
+                const result = data.all ? counters.total : counters.perYear[data.year];
+                if (!result) return;
+                data.total = result.total;
+                if (result.unknown > 0 && result.available + result.unavailable === 0) {
+                    data.available = '...';
+                    data.unavailable = '...';
+                } else {
+                    data.available = result.available;
+                    data.unavailable = result.unavailable;
+                }
+            });
+            updateDOMCounters(yearsData);
+        }
+
+        function pendingVideoIds(snapshot) {
+            const pending = [];
+            const seen = {};
+            YEAR_LIST.forEach(year => {
+                (snapshot.years[year] || []).forEach(videoId => {
+                    if (seen[videoId]) return;
+                    seen[videoId] = true;
+                    const entry = statusEntry(videoId);
+                    if (!entry || Date.now() - entry.t >= STATUS_TTL) pending.push(videoId);
+                });
+            });
+            return pending;
+        }
+
+        async function checkVideoStatus(videoId) {
+            let res;
+            try {
+                res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`, { cache: 'no-store' });
+            } catch (e) {
+                return null;
+            }
+            if (res.ok) return true;
+            if (res.status === 404 || res.status === 401) return false;
+            return null;
+        }
+
+        async function checkPendingStatuses(snapshot) {
+            const pending = pendingVideoIds(snapshot);
+            if (pending.length === 0) return;
+            let cursor = 0;
+            let done = 0;
+            const worker = async () => {
+                while (cursor < pending.length) {
+                    const videoId = pending[cursor++];
+                    const available = await checkVideoStatus(videoId);
+                    if (available !== null) {
+                        statusStore[videoId] = { a: available ? 1 : 0, t: Date.now() };
+                        statusStoreDirty = true;
+                    }
+                    done++;
+                    if (done % 10 === 0) {
+                        persistStatuses();
+                        paintCounters(snapshot);
+                    }
+                }
+            };
+            const runners = [];
+            for (let i = 0; i < Math.min(CHECK_LIMIT, pending.length); i++) runners.push(worker());
+            await Promise.all(runners);
+            persistStatuses();
+        }
+
+        async function updateDynamicCounters() {
+            const cached = readIndexSnapshot();
+            if (cached) paintCounters(cached);
+            const snapshot = await loadIndexSnapshot();
+            if (!snapshot) return;
+            paintCounters(snapshot);
+            await checkPendingStatuses(snapshot);
+            paintCounters(snapshot);
+        }
+
+        window.addEventListener('pagehide', persistStatuses);
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) persistStatuses();
+        });
 
         function updateDOMCounters(dataArray) {
             document.querySelectorAll('.year-card').forEach(card => {
@@ -1286,112 +1729,414 @@
             });
         }
 
+        const ICONS = {
+            play: '<path d="M7.4 4.8 17.9 12 7.4 19.2Z"/>',
+            pause: '<rect x="7" y="4" width="3.6" height="16" rx="1.3"/><rect x="13.4" y="4" width="3.6" height="16" rx="1.3"/>',
+            replay: '<path d="M12 4.6V1.9c0-.4-.5-.7-.8-.4L5.9 6c-.2.2-.2.5 0 .7l5.3 4.5c.3.3.8 0 .8-.4V8.1a5.2 5.2 0 1 1-5.2 5.2H4.2A7.8 7.8 0 1 0 12 4.6Z"/>',
+            volume: '<path d="M4 9.4v5.2h3.2L12 18.8V5.2L7.2 9.4H4Z"/><path d="M14.7 8.2a5.3 5.3 0 0 1 0 7.6l1.3 1.4a7.2 7.2 0 0 0 0-10.4Z"/><path d="M16.9 5.2a8.9 8.9 0 0 1 0 13.6l1.3 1.4a10.8 10.8 0 0 0 0-16.4Z"/>',
+            mute: '<path d="M4 9.4v5.2h3.2L12 18.8V5.2L7.2 9.4H4Z"/><path d="m14.6 9.8 1.4-1.4 2 2 2-2 1.4 1.4-2 2 2 2-1.4 1.4-2-2-2 2-1.4-1.4 2-2z"/>',
+            full: '<path d="M4 9.3V4h5.3v1.9H5.9v3.4H4Zm10.7-5.3H20v5.3h-1.9V5.9h-3.4V4ZM4 14.7h1.9v3.4h3.4V20H4v-5.3Zm14.1 0H20V20h-5.3v-1.9h3.4v-3.4Z"/>',
+            exitFull: '<path d="M9.3 4v5.3H4V7.4h3.4V4h1.9Zm5.4 0h1.9v3.4H20v1.9h-5.3V4ZM4 14.7h5.3V20H7.4v-3.4H4v-1.9Zm10.7 0H20v1.9h-3.4V20h-1.9v-5.3Z"/>',
+            close: '<path d="m6.7 5.3 5.3 5.3 5.3-5.3 1.4 1.4-5.3 5.3 5.3 5.3-1.4 1.4-5.3-5.3-5.3 5.3-1.4-1.4 5.3-5.3-5.3-5.3z"/>'
+        };
+
+        function icon(name) {
+            return `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
+        }
+
+        function formatTime(seconds) {
+            if (!isFinite(seconds) || seconds < 0) seconds = 0;
+            const minutes = Math.floor(seconds / 60);
+            const rest = Math.floor(seconds % 60);
+            return `${minutes}:${rest < 10 ? '0' : ''}${rest}`;
+        }
+
+        function setPlayIcon(state) {
+            const name = state === 'pause' ? 'pause' : (state === 'replay' ? 'replay' : 'play');
+            playPauseBtn.innerHTML = icon(name);
+            playPauseBtn.title = state === 'pause' ? 'Пауза' : (state === 'replay' ? 'Смотреть снова' : 'Смотреть');
+            if (centerPlayEl) {
+                centerPlayEl.innerHTML = icon(state === 'replay' ? 'replay' : 'play');
+                centerPlayEl.style.display = state === 'pause' ? 'none' : 'flex';
+            }
+        }
+
+        function syncPlayIcon() {
+            const video = currentVideo;
+            if (!video) return;
+            if (video.ended) setPlayIcon('replay');
+            else if (video.paused) setPlayIcon('play');
+            else setPlayIcon('pause');
+        }
+
+        function updateBufferBar() {
+            const video = currentVideo;
+            if (!video || !isFinite(video.duration) || video.duration <= 0) return;
+            try {
+                const ranges = video.buffered;
+                if (!ranges || !ranges.length) return;
+                const end = ranges.end(ranges.length - 1);
+                progressBuffer.style.width = `${Math.min(100, (end / video.duration) * 100)}%`;
+            } catch (e) {}
+        }
+
+        function updateProgressBar() {
+            const video = currentVideo;
+            if (!video || !isFinite(video.duration) || video.duration <= 0 || isDraggingProgress) return;
+            const ratio = Math.min(1, video.currentTime / video.duration);
+            progressBar.style.width = `${ratio * 100}%`;
+            progressThumb.style.left = `${ratio * 100}%`;
+            const label = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+            if (timeDisplay.textContent !== label) timeDisplay.textContent = label;
+        }
+
+        function startProgressTicker() {
+            stopProgressTicker();
+            const step = () => {
+                updateProgressBar();
+                progressTicker = requestAnimationFrame(step);
+            };
+            progressTicker = requestAnimationFrame(step);
+        }
+
+        function stopProgressTicker() {
+            if (progressTicker) {
+                cancelAnimationFrame(progressTicker);
+                progressTicker = null;
+            }
+        }
+
+        function updateVolumeUI() {
+            const video = currentVideo;
+            const value = video ? (video.muted ? 0 : video.volume) : (isMuted ? 0 : currentVolume);
+            volumeLevel.style.width = `${value * 100}%`;
+            volumeThumb.style.left = `${value * 100}%`;
+            muteBtn.innerHTML = icon(value === 0 ? 'mute' : 'volume');
+            muteBtn.title = value === 0 ? 'Включить звук' : 'Выключить звук';
+        }
+
+        function applyMediaRatio(width, height) {
+            if (!width || !height) return;
+            const ratio = width / height;
+            if (!isFinite(ratio) || ratio <= 0) return;
+            mediaPlayerContainer.style.setProperty('--media-ar', ratio.toFixed(4));
+        }
+
+        function resetPlayerState() {
+            isPlaying = false;
+            isDraggingProgress = false;
+            isDraggingVolume = false;
+            progressBar.style.width = '0%';
+            progressThumb.style.left = '0%';
+            progressBuffer.style.width = '0%';
+            scrubTip.style.left = '0%';
+            scrubTip.textContent = '0:00';
+            timeDisplay.textContent = '0:00 / 0:00';
+            setPlayIcon('play');
+            stopProgressTicker();
+        }
+
+        function releasePlayerVideo() {
+            const video = currentVideo;
+            currentVideo = null;
+            stopProgressTicker();
+            if (!video) return;
+            try { video.pause(); } catch (e) {}
+            try {
+                video.removeAttribute('src');
+                video.load();
+            } catch (e) {}
+        }
+
+        function bindVideoEvents(video) {
+            video.addEventListener('play', () => {
+                isPlaying = true;
+                syncPlayIcon();
+                startProgressTicker();
+            });
+            video.addEventListener('playing', syncPlayIcon);
+            video.addEventListener('pause', () => {
+                isPlaying = false;
+                syncPlayIcon();
+                stopProgressTicker();
+                updateProgressBar();
+            });
+            video.addEventListener('loadedmetadata', () => {
+                applyMediaRatio(video.videoWidth, video.videoHeight);
+                updateProgressBar();
+                updateBufferBar();
+                syncPlayIcon();
+            });
+            video.addEventListener('progress', updateBufferBar);
+            video.addEventListener('seeked', updateProgressBar);
+            video.addEventListener('ended', () => {
+                syncPlayIcon();
+                updateProgressBar();
+            });
+            video.addEventListener('error', () => {
+                releasePlayerVideo();
+                document.getElementById('mediaControls').style.display = 'none';
+                mediaPlayerDiv.innerHTML = '<div style="color:red; text-align:center; padding:20px;">Ошибка загрузки видео</div>';
+            });
+        }
+
         function openMediaPlayer(media) {
+            if (playerCloseTimer) {
+                clearTimeout(playerCloseTimer);
+                playerCloseTimer = null;
+            }
+            releasePlayerVideo();
+            mediaPlayerContainer.style.removeProperty('--media-ar');
             mediaPlayerDiv.innerHTML = '';
+            mediaPlayerDiv.onclick = null;
+            centerPlayEl = null;
+            resetPlayerState();
             const placeholder = document.createElement('div');
             placeholder.className = 'loading-placeholder';
             placeholder.innerHTML = '<div class="loading-spinner"></div>';
             mediaPlayerDiv.appendChild(placeholder);
             if (media.type === 'image') {
                 const img = document.createElement('img');
-                img.src = media.url; img.alt = media.caption;
-                img.onload = () => placeholder.remove();
-                img.onerror = () => { placeholder.remove(); mediaPlayerDiv.innerHTML = '<div style="color:red; text-align:center; padding:20px;">Ошибка загрузки изображения</div>'; };
+                img.src = media.url;
+                img.alt = media.caption;
+                img.onload = () => {
+                    applyMediaRatio(img.naturalWidth, img.naturalHeight);
+                    placeholder.remove();
+                };
+                img.onerror = () => {
+                    placeholder.remove();
+                    mediaPlayerDiv.innerHTML = '<div style="color:red; text-align:center; padding:20px;">Ошибка загрузки изображения</div>';
+                };
                 mediaPlayerDiv.appendChild(img);
                 document.getElementById('mediaControls').style.display = 'none';
-                mediaPlayerDiv.addEventListener('click', () => closeMediaPlayer());
+                mediaPlayerDiv.onclick = () => closeMediaPlayer();
             } else {
                 const video = document.createElement('video');
-                video.src = media.url; video.controls = false; video.id = 'playerVideo';
+                video.src = media.url;
+                video.controls = false;
+                video.playsInline = true;
+                video.preload = 'auto';
+                video.volume = currentVolume;
+                video.muted = isMuted;
                 video.onloadeddata = () => placeholder.remove();
-                video.onerror = () => { placeholder.remove(); mediaPlayerDiv.innerHTML = '<div style="color:red; text-align:center; padding:20px;">Ошибка загрузки видео</div>'; document.getElementById('mediaControls').style.display = 'none'; };
                 mediaPlayerDiv.appendChild(video);
+                centerPlayEl = document.createElement('div');
+                centerPlayEl.className = 'center-play';
+                centerPlayEl.innerHTML = icon('play');
+                mediaPlayerDiv.appendChild(centerPlayEl);
                 document.getElementById('mediaControls').style.display = 'flex';
                 currentVideo = video;
-                setupVideoPlayer(video);
-                mediaPlayerDiv.addEventListener('click', () => togglePlayPause());
+                bindVideoEvents(video);
+                updateVolumeUI();
+                setPlayIcon('play');
+                mediaPlayerDiv.onclick = () => togglePlayPause();
+                const promise = video.play();
+                if (promise && promise.catch) promise.catch(() => {});
             }
+            playerOpen = true;
             mediaPlayerOverlay.style.display = 'flex';
-            setTimeout(() => { mediaPlayerOverlay.style.opacity = '1'; document.querySelector('.media-player-container').style.transform = 'scale(1)'; }, 10);
+            setTimeout(() => {
+                mediaPlayerOverlay.style.opacity = '1';
+                playerFrame.style.transform = 'scale(1)';
+            }, 10);
             document.body.style.overflow = 'hidden';
             updateFooterToggleStyle(true);
         }
-        function setupVideoPlayer(video) {
-            video.volume = currentVolume; volumeLevel.style.width = `${currentVolume * 100}%`; video.muted = isMuted; muteBtn.textContent = isMuted ? '🔇' : '🔊';
-            video.play().catch(() => { isPlaying = false; playPauseBtn.textContent = '▶'; }).then(() => { isPlaying = true; playPauseBtn.textContent = '⏸'; });
-            video.addEventListener('timeupdate', () => {
-                if (!isDraggingProgress && video.duration) {
-                    const percent = (video.currentTime / video.duration) * 100; progressBar.style.width = `${percent}%`;
-                    const curM = Math.floor(video.currentTime / 60), curS = Math.floor(video.currentTime % 60);
-                    const durM = Math.floor(video.duration / 60), durS = Math.floor(video.duration % 60);
-                    timeDisplay.textContent = `${curM}:${curS<10?'0':''}${curS} / ${durM}:${durS<10?'0':''}${durS}`;
-                }
-            });
-            video.addEventListener('ended', () => { isPlaying = false; playPauseBtn.textContent = '▶'; video.currentTime = 0; progressBar.style.width = '0%'; });
-            const onProgressClick = (e) => {
-                const rect = progressContainer.getBoundingClientRect();
-                let pos = (e.clientX - rect.left) / rect.width; pos = Math.min(1, Math.max(0, pos));
-                video.currentTime = pos * video.duration; progressBar.style.width = `${pos*100}%`;
-            };
-            progressContainer.addEventListener('click', onProgressClick);
-            progressContainer.addEventListener('mousedown', (e) => { isDraggingProgress = true; onProgressClick(e); });
-            document.addEventListener('mousemove', (e) => {
-                if (isDraggingProgress) {
-                    const rect = progressContainer.getBoundingClientRect();
-                    let pos = (e.clientX - rect.left) / rect.width; pos = Math.min(1, Math.max(0, pos));
-                    video.currentTime = pos * video.duration; progressBar.style.width = `${pos*100}%`;
-                }
-            });
-            document.addEventListener('mouseup', () => { isDraggingProgress = false; });
-            playPauseBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlayPause(); });
-            muteBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); isMuted = !isMuted; video.muted = isMuted; muteBtn.textContent = isMuted ? '🔇' : '🔊';
-            });
-            volumeSlider.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const rect = volumeSlider.getBoundingClientRect();
-                let pos = (e.clientX - rect.left) / rect.width; pos = Math.min(1, Math.max(0, pos));
-                currentVolume = pos; video.volume = currentVolume; volumeLevel.style.width = `${currentVolume*100}%`;
-                if (currentVolume === 0) { isMuted = true; muteBtn.textContent = '🔇'; video.muted = true; }
-                else { isMuted = false; muteBtn.textContent = '🔊'; video.muted = false; }
-            });
-            volumeSlider.addEventListener('mousedown', (e) => {
-                isDraggingVolume = true;
-                const rect = volumeSlider.getBoundingClientRect();
-                let pos = (e.clientX - rect.left) / rect.width; pos = Math.min(1, Math.max(0, pos));
-                currentVolume = pos; video.volume = currentVolume; volumeLevel.style.width = `${currentVolume*100}%`;
-            });
-            document.addEventListener('mousemove', (e) => {
-                if (isDraggingVolume) {
-                    const rect = volumeSlider.getBoundingClientRect();
-                    let pos = (e.clientX - rect.left) / rect.width; pos = Math.min(1, Math.max(0, pos));
-                    currentVolume = pos; video.volume = currentVolume; volumeLevel.style.width = `${currentVolume*100}%`;
-                    if (currentVolume === 0) { isMuted = true; muteBtn.textContent = '🔇'; video.muted = true; }
-                    else { isMuted = false; muteBtn.textContent = '🔊'; video.muted = false; }
-                }
-            });
-            document.addEventListener('mouseup', () => { isDraggingVolume = false; });
+
+        function pointerRatio(element, event) {
+            const rect = element.getBoundingClientRect();
+            if (!rect.width) return 0;
+            return Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
         }
-        function togglePlayPause() {
+
+        function seekFromPointer(event) {
+            const video = currentVideo;
+            if (!video || !isFinite(video.duration) || video.duration <= 0) return;
+            const ratio = pointerRatio(progressContainer, event);
+            video.currentTime = ratio * video.duration;
+            progressBar.style.width = `${ratio * 100}%`;
+            progressThumb.style.left = `${ratio * 100}%`;
+            timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+            scrubTip.style.left = `${ratio * 100}%`;
+            scrubTip.textContent = formatTime(video.currentTime);
+        }
+
+        function previewSeek(event) {
+            const video = currentVideo;
+            if (!video || !isFinite(video.duration) || video.duration <= 0) return;
+            const ratio = pointerRatio(progressContainer, event);
+            scrubTip.style.left = `${ratio * 100}%`;
+            scrubTip.textContent = formatTime(ratio * video.duration);
+        }
+
+        function setVolumeFromPointer(event) {
+            const video = currentVideo;
+            if (!video) return;
+            const ratio = pointerRatio(volumeSlider, event);
+            currentVolume = ratio;
+            isMuted = ratio === 0;
+            video.volume = ratio;
+            video.muted = isMuted;
+            updateVolumeUI();
+        }
+
+        progressContainer.addEventListener('pointerdown', (event) => {
             if (!currentVideo) return;
-            if (isPlaying) { currentVideo.pause(); playPauseBtn.textContent = '▶'; }
-            else { currentVideo.play().catch(e => {}); playPauseBtn.textContent = '⏸'; }
-            isPlaying = !isPlaying;
+            event.stopPropagation();
+            isDraggingProgress = true;
+            progressContainer.classList.add('dragging');
+            progressContainer.setPointerCapture(event.pointerId);
+            seekFromPointer(event);
+        });
+        progressContainer.addEventListener('pointermove', (event) => {
+            previewSeek(event);
+            if (isDraggingProgress) seekFromPointer(event);
+        });
+        progressContainer.addEventListener('pointerup', (event) => {
+            isDraggingProgress = false;
+            progressContainer.classList.remove('dragging');
+            try { progressContainer.releasePointerCapture(event.pointerId); } catch (e) {}
+            updateProgressBar();
+        });
+        progressContainer.addEventListener('pointercancel', () => {
+            isDraggingProgress = false;
+            progressContainer.classList.remove('dragging');
+        });
+
+        volumeSlider.addEventListener('pointerdown', (event) => {
+            if (!currentVideo) return;
+            event.stopPropagation();
+            isDraggingVolume = true;
+            volumeSlider.setPointerCapture(event.pointerId);
+            setVolumeFromPointer(event);
+        });
+        volumeSlider.addEventListener('pointermove', (event) => {
+            if (isDraggingVolume) setVolumeFromPointer(event);
+        });
+        volumeSlider.addEventListener('pointerup', (event) => {
+            isDraggingVolume = false;
+            try { volumeSlider.releasePointerCapture(event.pointerId); } catch (e) {}
+        });
+        volumeSlider.addEventListener('pointercancel', () => {
+            isDraggingVolume = false;
+        });
+
+        playPauseBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            togglePlayPause();
+        });
+
+        muteBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const video = currentVideo;
+            if (!video) return;
+            video.muted = !video.muted;
+            if (!video.muted && video.volume === 0) video.volume = 0.6;
+            currentVolume = video.volume;
+            isMuted = video.muted;
+            updateVolumeUI();
+        });
+
+        fullscreenBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleFullscreen();
+        });
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                if (mediaPlayerOverlay.requestFullscreen) {
+                    const promise = mediaPlayerOverlay.requestFullscreen();
+                    if (promise && promise.catch) promise.catch(() => {});
+                }
+            } else if (document.exitFullscreen) {
+                const promise = document.exitFullscreen();
+                if (promise && promise.catch) promise.catch(() => {});
+            }
         }
+
+        document.addEventListener('fullscreenchange', () => {
+            const isFull = !!document.fullscreenElement;
+            fullscreenBtn.innerHTML = icon(isFull ? 'exitFull' : 'full');
+            fullscreenBtn.title = isFull ? 'Выйти из полноэкранного режима' : 'На весь экран';
+        });
+
+        function togglePlayPause() {
+            const video = currentVideo;
+            if (!video) return;
+            if (video.paused) {
+                if (video.ended || (video.duration && video.currentTime >= video.duration - 0.05)) video.currentTime = 0;
+                const promise = video.play();
+                if (promise && promise.catch) promise.catch(() => {});
+            } else {
+                video.pause();
+            }
+            requestAnimationFrame(syncPlayIcon);
+        }
+
         function closeMediaPlayer() {
+            if (!playerOpen) return;
+            playerOpen = false;
+            if (document.fullscreenElement && document.exitFullscreen) {
+                const exit = document.exitFullscreen();
+                if (exit && exit.catch) exit.catch(() => {});
+            }
             mediaPlayerOverlay.style.opacity = '0';
-            document.querySelector('.media-player-container').style.transform = 'scale(0.95)';
-            setTimeout(() => {
+            playerFrame.style.transform = 'scale(0.95)';
+            releasePlayerVideo();
+            resetPlayerState();
+            document.body.style.overflow = '';
+            updateFooterToggleStyle(false);
+            if (playerCloseTimer) clearTimeout(playerCloseTimer);
+            playerCloseTimer = setTimeout(() => {
+                playerCloseTimer = null;
                 mediaPlayerOverlay.style.display = 'none';
-                if (currentVideo) { currentVideo.pause(); currentVideo.currentTime = 0; currentVideo = null; isPlaying = false; playPauseBtn.textContent = '▶'; progressBar.style.width = '0%'; timeDisplay.textContent = '0:00 / 0:00'; }
-                document.body.style.overflow = '';
-                updateFooterToggleStyle(false);
+                mediaPlayerDiv.innerHTML = '';
+                mediaPlayerDiv.onclick = null;
+                centerPlayEl = null;
             }, 300);
         }
+
         function updateFooterToggleStyle(isOpen) {
             const toggleWrapper = document.querySelector('.footer-toggle-wrapper');
-            if (toggleWrapper) toggleWrapper.style.filter = isOpen ? 'blur(2px)' : 'none', toggleWrapper.style.opacity = isOpen ? '0.7' : '1';
+            if (!toggleWrapper) return;
+            toggleWrapper.style.opacity = isOpen ? '0' : '1';
+            toggleWrapper.style.visibility = isOpen ? 'hidden' : 'visible';
+            toggleWrapper.style.pointerEvents = isOpen ? 'none' : 'auto';
+            if (isOpen) toggleWrapper.classList.add('is-hidden');
+            else toggleWrapper.classList.remove('is-hidden');
         }
+
+        closePlayerBtn.innerHTML = icon('close');
+        fullscreenBtn.innerHTML = icon('full');
+        playPauseBtn.innerHTML = icon('play');
+        updateVolumeUI();
+
+        document.addEventListener('keydown', (event) => {
+            if (!playerOpen) return;
+            if (document.fullscreenElement && event.key === 'Escape') return;
+            if (event.key === 'Escape') {
+                closeMediaPlayer();
+                return;
+            }
+            const video = currentVideo;
+            if (!video) return;
+            if (event.key === ' ' || event.code === 'Space') {
+                event.preventDefault();
+                togglePlayPause();
+            } else if (event.key === 'ArrowRight') {
+                video.currentTime = Math.min(video.duration || 0, video.currentTime + 5);
+                updateProgressBar();
+            } else if (event.key === 'ArrowLeft') {
+                video.currentTime = Math.max(0, video.currentTime - 5);
+                updateProgressBar();
+            } else if (event.key === 'm' || event.key === 'M' || event.key === 'ь') {
+                video.muted = !video.muted;
+                isMuted = video.muted;
+                updateVolumeUI();
+            } else if (event.key === 'f' || event.key === 'F' || event.key === 'а') {
+                toggleFullscreen();
+            }
+        });
         function showRandomMoment() {
             const imagesOnly = mediaFiles.filter(m => m.type === 'image');
             const random = imagesOnly[Math.floor(Math.random() * imagesOnly.length)];
@@ -1405,20 +2150,76 @@
             randomMomentDiv.appendChild(img);
             const caption = document.createElement('div'); caption.className = 'random-moment-caption'; caption.textContent = random.caption;
             randomMomentDiv.appendChild(caption);
-            randomMomentDiv.addEventListener('click', () => openMediaPlayer(random), { once: true });
+            randomMomentDiv.onclick = () => openMediaPlayer(random);
         }
+        function renderStillFrame(canvas, url, placeholder, maxWidth) {
+            const limit = maxWidth || 480;
+            const image = new Image();
+            image.decoding = 'async';
+            image.onload = () => {
+                const naturalWidth = image.naturalWidth || limit;
+                const naturalHeight = image.naturalHeight || 270;
+                const scale = Math.min(1, limit / naturalWidth) || 1;
+                canvas.width = Math.max(1, Math.round(naturalWidth * scale));
+                canvas.height = Math.max(1, Math.round(naturalHeight * scale));
+                const context = canvas.getContext('2d');
+                if (!context) {
+                    if (placeholder) placeholder.remove();
+                    return;
+                }
+                try {
+                    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                } catch (e) {}
+                if (placeholder) placeholder.remove();
+            };
+            image.onerror = () => { if (placeholder) placeholder.remove(); };
+            image.src = url;
+        }
+
+        function momentTypeLabel(media) {
+            if (media.type === 'video') return 'VID';
+            if (media.type === 'image' && media.url.indexOf('assets/gif/') === 0) return 'GIF';
+            return 'PIC';
+        }
+
+        function showAnimatedPreview(item) {
+            const url = item.dataset.anim;
+            if (!url || item.querySelector('.moment-anim')) return;
+            const preview = document.createElement('img');
+            preview.className = 'moment-anim';
+            preview.alt = '';
+            preview.src = url;
+            const caption = item.querySelector('.moment-caption');
+            item.insertBefore(preview, caption);
+        }
+
+        function hideAnimatedPreview(item) {
+            const preview = item.querySelector('.moment-anim');
+            if (preview) preview.remove();
+        }
+
         function loadAllMoments() {
             momentsGrid.innerHTML = '';
-            mediaFiles.forEach(media => {
+            mediaFiles.forEach((media, index) => {
                 const item = document.createElement('div');
                 item.className = 'moment-item';
                 item.dataset.type = media.type;
+                item.dataset.index = index;
                 const placeholder = document.createElement('div'); placeholder.className = 'loading-placeholder'; placeholder.innerHTML = '<div class="loading-spinner"></div>';
                 item.appendChild(placeholder);
                 const caption = document.createElement('div'); caption.className = 'moment-caption'; caption.textContent = media.caption;
                 item.appendChild(caption);
+                const badge = document.createElement('div');
+                badge.className = 'moment-type';
+                badge.textContent = momentTypeLabel(media);
+                item.appendChild(badge);
                 if (media.type === 'video') {
                     const playIcon = document.createElement('div'); playIcon.className = 'play-icon'; item.appendChild(playIcon);
+                }
+                if (media.type === 'image' && media.url.indexOf('assets/gif/') === 0) {
+                    item.dataset.anim = media.url;
+                    item.addEventListener('mouseenter', () => showAnimatedPreview(item));
+                    item.addEventListener('mouseleave', () => hideAnimatedPreview(item));
                 }
                 item.addEventListener('click', () => openMediaPlayer(media));
                 momentsGrid.appendChild(item);
@@ -1429,22 +2230,30 @@
                     if (entry.isIntersecting) {
                         const item = entry.target;
                         if (item.dataset.loaded === 'true') return;
-                        const mediaObj = mediaFiles[Array.from(momentsGrid.children).indexOf(item)];
+                        const mediaObj = mediaFiles[parseInt(item.dataset.index, 10)];
                         if (!mediaObj) return;
                         const placeholder = item.querySelector('.loading-placeholder');
                         let mediaEl;
                         if (mediaObj.type === 'image') {
-                            mediaEl = document.createElement('img');
-                            mediaEl.src = mediaObj.url; mediaEl.alt = mediaObj.caption;
-                            mediaEl.onload = () => { if(placeholder) placeholder.remove(); };
-                            mediaEl.onerror = () => { if(placeholder) placeholder.remove(); };
+                            if (mediaObj.url.indexOf('assets/gif/') === 0) {
+                                mediaEl = document.createElement('canvas');
+                                renderStillFrame(mediaEl, mediaObj.url, placeholder);
+                            } else {
+                                mediaEl = document.createElement('img');
+                                mediaEl.loading = 'lazy';
+                                mediaEl.decoding = 'async';
+                                mediaEl.src = mediaObj.url;
+                                mediaEl.alt = mediaObj.caption;
+                                mediaEl.onload = () => { if (placeholder) placeholder.remove(); };
+                                mediaEl.onerror = () => { if (placeholder) placeholder.remove(); };
+                            }
                             item.insertBefore(mediaEl, item.firstChild);
                         } else {
                             mediaEl = document.createElement('video');
                             mediaEl.muted = true; mediaEl.loop = true; mediaEl.playsInline = true; mediaEl.preload = 'metadata';
                             mediaEl.src = mediaObj.url;
-                            mediaEl.onloadeddata = () => { if(placeholder) placeholder.remove(); };
-                            mediaEl.onerror = () => { if(placeholder) placeholder.remove(); };
+                            mediaEl.onloadeddata = () => { if (placeholder) placeholder.remove(); };
+                            mediaEl.onerror = () => { if (placeholder) placeholder.remove(); };
                             item.insertBefore(mediaEl, item.firstChild);
                         }
                         item.dataset.loaded = 'true';
@@ -1462,30 +2271,31 @@
         function preloadResources() {
             return new Promise(resolve => {
                 const urlsToPreload = [
-                    ...gifUrls,
-                    ...emojiUrls.slice(0,10),
+                    ...emojiUrls.slice(0, 20),
                     'assets/background/2022.webp','assets/background/2023.webp','assets/background/2024.webp','assets/background/2025.webp','assets/background/2026.webp',
-                    'assets/avatars/telegram_avatar.webp','assets/avatars/telegram.webp','assets/avatars/youtube_avatar.webp','assets/avatars/youtube.webp','assets/avatars/discord_avatar.png','assets/avatars/discord.webp',
-                    ...mediaFiles.slice(0,6).map(m => m.url)
+                    'assets/avatars/telegram_avatar.webp','assets/avatars/telegram.webp','assets/avatars/youtube_avatar.webp','assets/avatars/youtube.webp','assets/avatars/discord_avatar.webp','assets/avatars/discord.webp'
                 ];
                 let loaded = 0;
+                let finished = false;
                 const total = urlsToPreload.length;
-                if (total === 0) return resolve();
+                const done = () => {
+                    if (finished) return;
+                    finished = true;
+                    resolve();
+                };
+                if (total === 0) return done();
+                const step = () => {
+                    loaded++;
+                    if (loaded >= total) done();
+                };
                 urlsToPreload.forEach(url => {
-                    if (url.endsWith('.webm') || url.endsWith('.mp4')) {
-                        const video = document.createElement('video');
-                        video.preload = 'metadata';
-                        video.src = url;
-                        video.onloadedmetadata = () => { loaded++; if(loaded >= total) resolve(); };
-                        video.onerror = () => { loaded++; if(loaded >= total) resolve(); };
-                    } else {
-                        const img = new Image();
-                        img.src = url;
-                        img.onload = () => { loaded++; if(loaded >= total) resolve(); };
-                        img.onerror = () => { loaded++; if(loaded >= total) resolve(); };
-                    }
+                    const img = new Image();
+                    img.decoding = 'async';
+                    img.src = url;
+                    img.onload = step;
+                    img.onerror = step;
                 });
-                setTimeout(resolve, 2000);
+                setTimeout(done, 900);
             });
         }
 
@@ -1494,21 +2304,75 @@
             favicon.href = randomEmoji;
         }
 
-        window.addEventListener('load', async () => {
-            buildYearsGrid();
-            showRandomMoment();
-            loadAllMoments();
-            await preloadResources();
+        const INTRO_KEY = 'cryptoIntroShown';
+
+        function introSeen() {
+            try {
+                return sessionStorage.getItem(INTRO_KEY) === '1';
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function markIntroSeen() {
+            try {
+                sessionStorage.setItem(INTRO_KEY, '1');
+            } catch (e) {}
+        }
+
+        function revealSite(instant) {
+            if (loaderHidden) return;
+            loaderHidden = true;
+            markIntroSeen();
+            if (loadingTextTimer) {
+                clearInterval(loadingTextTimer);
+                loadingTextTimer = null;
+            }
+            if (instant) {
+                loaderScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                gifGrid.innerHTML = '';
+                showRandomMoment();
+                startEmojiSystem();
+                updateDynamicCounters();
+                return;
+            }
+            loaderScreen.style.opacity = '0';
             setTimeout(() => {
-                loaderScreen.style.opacity = '0';
-                setTimeout(() => {
-                    loaderScreen.style.display = 'none';
-                    mainContent.style.display = 'block';
-                    updateDynamicCounters();
-                }, 500);
-            }, 200);
-            setInterval(changeFavicon, 3000);
+                loaderScreen.style.display = 'none';
+                mainContent.style.display = 'block';
+                gifGrid.innerHTML = '';
+                showRandomMoment();
+                startEmojiSystem();
+                updateDynamicCounters();
+            }, 400);
+        }
+
+        function hideLoader() {
+            revealSite(false);
+        }
+
+        function init() {
+            buildYearsGrid();
+            loadAllMoments();
+            if (introSeen() || document.documentElement.classList.contains('intro-skip')) {
+                revealSite(true);
+            } else {
+                preloadResources().then(hideLoader);
+                setTimeout(hideLoader, 1800);
+            }
             changeFavicon();
+            setInterval(changeFavicon, 3000);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) hideLoader();
         });
 
         showAllBtn.addEventListener('click', () => {
@@ -1533,19 +2397,21 @@
 
         const toggleWrapper = document.createElement('div');
         toggleWrapper.className = 'footer-toggle-wrapper';
-        toggleWrapper.innerHTML = '<button id="toggleFooterBtn" class="footer-toggle-btn" title="Скрыть футер">▲</button>';
+        toggleWrapper.innerHTML = '<button id="toggleFooterBtn" class="footer-toggle-btn" title="Скрыть футер"></button>';
         document.body.appendChild(toggleWrapper);
         const toggleBtn = document.getElementById('toggleFooterBtn');
+        toggleBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9.4 12 15.4 18 9.4 16.6 8 12 12.6 7.4 8Z"/></svg>';
         function updateButtonPosition() {
             if (footer.classList.contains('footer-hidden')) {
-                toggleWrapper.style.bottom = '10px'; toggleBtn.textContent = '▲'; toggleBtn.title = "Показать футер";
+                toggleWrapper.style.bottom = '10px'; toggleBtn.classList.add('is-up'); toggleBtn.title = "Показать футер";
             } else {
                 const footerHeight = footer.offsetHeight;
-                toggleWrapper.style.bottom = `${footerHeight + 15}px`; toggleBtn.textContent = '▼'; toggleBtn.title = "Скрыть футер";
+                toggleWrapper.style.bottom = `${footerHeight + 15}px`; toggleBtn.classList.remove('is-up'); toggleBtn.title = "Скрыть футер";
             }
-            const mediaOpen = mediaPlayerOverlay.style.display === 'flex';
-            toggleWrapper.style.filter = mediaOpen ? 'blur(2px)' : 'none';
-            toggleWrapper.style.opacity = mediaOpen ? '0.7' : '1';
+            toggleWrapper.classList.toggle('is-hidden', playerOpen);
+            toggleWrapper.style.opacity = playerOpen ? '0' : '1';
+            toggleWrapper.style.visibility = playerOpen ? 'hidden' : 'visible';
+            toggleWrapper.style.pointerEvents = playerOpen ? 'none' : 'auto';
         }
         toggleBtn.addEventListener('click', function() {
             footer.classList.toggle('footer-hidden');
