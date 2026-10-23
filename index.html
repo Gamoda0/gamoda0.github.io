@@ -578,35 +578,36 @@
             align-items: center;
             justify-content: center;
             border: none !important;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.9);
+            border-radius: 0;
+            background: none;
+            color: rgba(255, 255, 255, 0.88);
             cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease, color 0.2s ease;
+            transition: color 0.2s ease, transform 0.2s ease;
         }
         .ctrl-btn svg {
-            width: 19px;
-            height: 19px;
+            width: 22px;
+            height: 22px;
             fill: currentColor;
             display: block;
         }
         .ctrl-btn:hover {
-            background: rgba(255, 255, 255, 0.16);
-            color: #fff;
-            transform: scale(1.06);
+            background: none;
+            color: var(--secondary);
+            transform: scale(1.12);
         }
         .play-btn {
-            width: 46px;
-            height: 46px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            width: 40px;
+            height: 40px;
+            background: none;
             color: #fff;
         }
         .play-btn svg {
-            width: 22px;
-            height: 22px;
+            width: 30px;
+            height: 30px;
         }
         .play-btn:hover {
-            background: linear-gradient(135deg, #ff5c1a, #ffa226);
+            background: none;
+            color: var(--secondary);
         }
         .time-display {
             flex: 0 0 auto;
@@ -720,10 +721,10 @@
         .volume-control .ctrl-btn {
             width: 34px;
             height: 34px;
-            background: transparent;
+            background: none;
         }
         .volume-control .ctrl-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: none;
         }
         .volume-slider {
             position: relative;
@@ -922,12 +923,12 @@
                 height: 30px;
             }
             .play-btn {
-                width: 38px;
-                height: 38px;
+                width: 34px;
+                height: 34px;
             }
             .play-btn svg {
-                width: 18px;
-                height: 18px;
+                width: 26px;
+                height: 26px;
             }
         }
         .random-moment {
@@ -1290,7 +1291,7 @@
             .progress-container { order: -1; flex: 0 0 100%; }
             .time-display { flex: 1 1 auto; text-align: left; }
             .volume-slider { width: 60px; }
-            .play-btn { width: 42px; height: 42px; }
+            .play-btn { width: 38px; height: 38px; }
             .center-play { width: 64px; height: 64px; margin: -32px 0 0 -32px; }
             .center-play svg { width: 26px; height: 26px; }
             .social-container { gap: 20px; }
@@ -1573,8 +1574,6 @@
         let currentIndex = 0;
         let endScreenEl = null;
         let endGridEl = null;
-        
-        const thumbCache = new Map();
 
         const gifUrls = [
             "assets/gif/1gif_eating.webp","assets/gif/2gif_pediknavalny.webp","assets/gif/3gif_posral.webp",
@@ -1609,41 +1608,212 @@
         function icon(name) {
             return `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
         }
-        
+
+        function readJSON(key, fallback) {
+            try {
+                const raw = localStorage.getItem(key);
+                if (!raw) return fallback;
+                const parsed = JSON.parse(raw);
+                return parsed === null || parsed === undefined ? fallback : parsed;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function writeJSON(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {}
+        }
+
+        const THUMB_KEY = 'cryptoVideoThumbs_v1';
+        const THUMB_WIDTH = 360;
+        const THUMB_CONCURRENCY = 2;
+        const THUMB_TIMEOUT = 9000;
+        const VOLUME_KEY = 'cryptoPlayerVolume_v1';
+
+        const thumbStore = readJSON(THUMB_KEY, {});
+        const thumbMemory = new Map();
+        const thumbPending = new Map();
+        const thumbQueue = [];
+        let thumbActive = 0;
+        let thumbPersistTimer = null;
+
+        const savedVolume = readJSON(VOLUME_KEY, null);
+        if (savedVolume && typeof savedVolume.v === 'number') {
+            currentVolume = Math.min(1, Math.max(0, savedVolume.v));
+            isMuted = !!savedVolume.m;
+        }
+
+        function saveVolume() {
+            writeJSON(VOLUME_KEY, { v: currentVolume, m: isMuted });
+        }
+
+        function schedulePersistThumbs() {
+            if (thumbPersistTimer) clearTimeout(thumbPersistTimer);
+            thumbPersistTimer = setTimeout(() => {
+                thumbPersistTimer = null;
+                writeJSON(THUMB_KEY, thumbStore);
+            }, 700);
+        }
+
+        function generateThumb(url) {
+            return new Promise(resolve => {
+                const video = document.createElement('video');
+                video.muted = true;
+                video.playsInline = true;
+                video.preload = 'auto';
+                let settled = false;
+                let timer = null;
+                const finish = (value) => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    try {
+                        video.removeAttribute('src');
+                        video.load();
+                    } catch (e) {}
+                    resolve(value);
+                };
+                timer = setTimeout(() => finish(null), THUMB_TIMEOUT);
+                video.addEventListener('loadedmetadata', () => {
+                    const duration = video.duration;
+                    try {
+                        video.currentTime = isFinite(duration) && duration > 0 ? duration / 2 : 0;
+                    } catch (e) {
+                        finish(null);
+                    }
+                });
+                video.addEventListener('seeked', () => {
+                    try {
+                        const width = video.videoWidth;
+                        const height = video.videoHeight;
+                        if (!width || !height) return finish(null);
+                        const scale = Math.min(1, THUMB_WIDTH / width);
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(width * scale));
+                        canvas.height = Math.max(1, Math.round(height * scale));
+                        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+                        finish(canvas.toDataURL('image/jpeg', 0.72));
+                    } catch (e) {
+                        finish(null);
+                    }
+                });
+                video.addEventListener('error', () => finish(null));
+                video.src = url;
+            });
+        }
+
+        function pumpThumbs() {
+            while (thumbActive < THUMB_CONCURRENCY && thumbQueue.length) {
+                const job = thumbQueue.shift();
+                thumbActive++;
+                generateThumb(job.url).then(data => {
+                    if (data) {
+                        thumbMemory.set(job.url, data);
+                        thumbStore[job.url] = data;
+                        schedulePersistThumbs();
+                    }
+                    thumbPending.delete(job.url);
+                    thumbActive--;
+                    job.resolve(data);
+                    pumpThumbs();
+                });
+            }
+        }
+
+        function cachedThumb(url) {
+            if (thumbMemory.has(url)) return thumbMemory.get(url);
+            const stored = thumbStore[url];
+            if (typeof stored === 'string' && stored.indexOf('data:image') === 0) {
+                thumbMemory.set(url, stored);
+                return stored;
+            }
+            return null;
+        }
+
+        function requestThumb(url, urgent) {
+            const cached = cachedThumb(url);
+            if (cached) return Promise.resolve(cached);
+            const pending = thumbPending.get(url);
+            if (pending) {
+                if (urgent) {
+                    const index = thumbQueue.findIndex(job => job.url === url);
+                    if (index > 0) {
+                        const job = thumbQueue.splice(index, 1)[0];
+                        thumbQueue.unshift(job);
+                    }
+                }
+                return pending;
+            }
+            let resolver;
+            const promise = new Promise(resolve => { resolver = resolve; });
+            thumbPending.set(url, promise);
+            const job = { url, resolve: resolver };
+            if (urgent) thumbQueue.unshift(job);
+            else thumbQueue.push(job);
+            pumpThumbs();
+            return promise;
+        }
+
         function createVideoThumbnail(url) {
             const video = document.createElement('video');
             video.src = url;
             video.muted = true;
             video.playsInline = true;
             video.preload = 'metadata';
-            
             video.addEventListener('loadedmetadata', () => {
                 if (isFinite(video.duration) && video.duration > 0) {
                     video.currentTime = video.duration / 2;
                 }
             });
-            
             video.addEventListener('play', () => {
                 video.pause();
             });
-            
             return video;
         }
-        
-        function getThumbElement(media) {
-            if (thumbCache.has(media.url)) {
-                return thumbCache.get(media.url);
+
+        function makeThumb(url, onDone) {
+            const img = document.createElement('img');
+            img.alt = '';
+            img.decoding = 'async';
+            const done = () => { if (onDone) onDone(); };
+            const cached = cachedThumb(url);
+            if (cached) {
+                img.onload = done;
+                img.onerror = done;
+                img.src = cached;
+                return img;
             }
-            let el;
-            if (media.type === 'video') {
-                el = createVideoThumbnail(media.url);
-            } else {
-                el = document.createElement('img');
-                el.src = media.url;
-            }
-            thumbCache.set(media.url, el);
-            return el;
+            requestThumb(url, true).then(data => {
+                if (data) {
+                    img.onload = done;
+                    img.onerror = done;
+                    img.src = data;
+                } else {
+                    const fallback = createVideoThumbnail(url);
+                    fallback.onloadeddata = done;
+                    fallback.onerror = done;
+                    if (img.parentNode) img.parentNode.replaceChild(fallback, img);
+                    else done();
+                }
+            });
+            return img;
         }
+
+        function warmThumbs() {
+            mediaFiles.forEach(media => {
+                if (media.type === 'video') requestThumb(media.url, false);
+            });
+        }
+
+        window.addEventListener('pagehide', () => {
+            if (thumbPersistTimer) {
+                clearTimeout(thumbPersistTimer);
+                thumbPersistTimer = null;
+                writeJSON(THUMB_KEY, thumbStore);
+            }
+        });
 
         function shuffleArray(arr) {
             for (let i = arr.length - 1; i > 0; i--) {
@@ -1814,23 +1984,6 @@
         const STATUS_KEY = 'cryptoYTStatus_v3';
         const STATUS_TTL = 604800000;
         const CHECK_LIMIT = 6;
-
-        function readJSON(key, fallback) {
-            try {
-                const raw = localStorage.getItem(key);
-                if (!raw) return fallback;
-                const parsed = JSON.parse(raw);
-                return parsed === null || parsed === undefined ? fallback : parsed;
-            } catch (e) {
-                return fallback;
-            }
-        }
-
-        function writeJSON(key, value) {
-            try {
-                localStorage.setItem(key, JSON.stringify(value));
-            } catch (e) {}
-        }
 
         const statusStore = readJSON(STATUS_KEY, {});
         let statusStoreDirty = false;
@@ -2096,6 +2249,7 @@
             volumeThumb.style.left = `${value * 100}%`;
             muteBtn.innerHTML = icon(value === 0 ? 'mute' : 'volume');
             muteBtn.title = value === 0 ? 'Включить звук' : 'Выключить звук';
+            if (video) saveVolume();
         }
 
         function applyMediaRatio(width, height) {
@@ -2202,7 +2356,7 @@
                 item.style.animationDelay = `${index * 0.05}s`;
                 let thumb;
                 if (media.type === 'video') {
-                    thumb = createVideoThumbnail(media.url);
+                    thumb = makeThumb(media.url);
                 } else {
                     thumb = document.createElement('img');
                     thumb.loading = 'lazy';
@@ -2255,8 +2409,15 @@
                 
                 if (thumb.dataset.url !== media.url) {
                     thumb.innerHTML = '';
-                    const el = getThumbElement(media);
-                    thumb.appendChild(el);
+                    if (media.type === 'video') {
+                        thumb.appendChild(makeThumb(media.url));
+                    } else {
+                        const img = document.createElement('img');
+                        img.alt = '';
+                        img.decoding = 'async';
+                        img.src = media.url;
+                        thumb.appendChild(img);
+                    }
                     thumb.dataset.url = media.url;
                 }
                 title.textContent = media.caption;
@@ -2385,6 +2546,17 @@
             updateVolumeUI();
         }
 
+        function changeVolumeBy(delta) {
+            const video = currentVideo;
+            if (!video) return;
+            const next = Math.min(1, Math.max(0, (video.muted ? 0 : video.volume) + delta));
+            currentVolume = next;
+            isMuted = next === 0;
+            video.volume = next;
+            video.muted = isMuted;
+            updateVolumeUI();
+        }
+
         progressContainer.addEventListener('pointerdown', (event) => {
             if (!currentVideo) return;
             event.stopPropagation();
@@ -2450,6 +2622,10 @@
         fullscreenBtn.addEventListener('click', (event) => {
             event.stopPropagation();
             toggleFullscreen();
+        });
+
+        mediaPlayerDiv.addEventListener('dblclick', () => {
+            if (currentVideo) toggleFullscreen();
         });
 
         function toggleFullscreen() {
@@ -2554,6 +2730,13 @@
                 if (video) {
                     event.preventDefault();
                     togglePlayPause();
+                }
+                return;
+            }
+            if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                if (video) {
+                    event.preventDefault();
+                    changeVolumeBy(event.key === 'ArrowUp' ? 0.1 : -0.1);
                 }
                 return;
             }
@@ -2695,9 +2878,7 @@
                             }
                             item.insertBefore(mediaEl, item.firstChild);
                         } else {
-                            mediaEl = createVideoThumbnail(mediaObj.url);
-                            mediaEl.onloadeddata = () => { if (placeholder) placeholder.remove(); };
-                            mediaEl.onerror = () => { if (placeholder) placeholder.remove(); };
+                            mediaEl = makeThumb(mediaObj.url, () => { if (placeholder) placeholder.remove(); });
                             item.insertBefore(mediaEl, item.firstChild);
                         }
                         item.dataset.loaded = 'true';
@@ -2764,6 +2945,13 @@
             } catch (e) {}
         }
 
+        function afterReveal() {
+            showRandomMoment();
+            startEmojiSystem();
+            updateDynamicCounters();
+            setTimeout(warmThumbs, 1200);
+        }
+
         function revealSite(instant) {
             if (loaderHidden) return;
             loaderHidden = true;
@@ -2776,9 +2964,7 @@
                 loaderScreen.style.display = 'none';
                 mainContent.style.display = 'block';
                 gifGrid.innerHTML = '';
-                showRandomMoment();
-                startEmojiSystem();
-                updateDynamicCounters();
+                afterReveal();
                 return;
             }
             loaderScreen.style.opacity = '0';
@@ -2786,9 +2972,7 @@
                 loaderScreen.style.display = 'none';
                 mainContent.style.display = 'block';
                 gifGrid.innerHTML = '';
-                showRandomMoment();
-                startEmojiSystem();
-                updateDynamicCounters();
+                afterReveal();
             }, 400);
         }
 
