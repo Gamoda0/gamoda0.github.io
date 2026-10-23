@@ -402,8 +402,8 @@
             display: none;
         }
         .media-player-container {
-            width: min(92vw, 1100px, max(330px, calc(62vh * var(--media-ar, 1.7778))));
-            max-height: calc(100vh - 150px);
+            width: min(92vw, 1100px, calc((100vh - 160px) * var(--media-ar, 1.7778)));
+            max-height: calc(100vh - 160px);
             background: linear-gradient(145deg, #1e1e1e, #252525);
             border-radius: 18px;
             overflow: hidden;
@@ -416,22 +416,16 @@
         .media-player {
             position: relative;
             width: 100%;
-            flex: 1 1 auto;
-            min-height: 0;
+            aspect-ratio: var(--media-ar, 1.7778);
             background: #000;
             cursor: pointer;
             overflow: hidden;
             transition: opacity 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         .media-player video,
         .media-player img {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
+            width: 100%;
+            height: 100%;
             display: block;
             background: #000;
             object-fit: contain;
@@ -590,10 +584,12 @@
             fill: currentColor;
             display: block;
         }
-        .ctrl-btn:hover {
+        .ctrl-btn:hover, .ctrl-btn:focus, .ctrl-btn:active {
             background: rgba(255, 255, 255, 0.16);
             color: #fff;
             transform: scale(1.06);
+            outline: none;
+            box-shadow: none;
         }
         .play-btn {
             width: 46px;
@@ -607,9 +603,10 @@
             width: 22px;
             height: 22px;
         }
-        .play-btn:hover {
+        .play-btn:hover, .play-btn:focus, .play-btn:active {
             background: linear-gradient(135deg, #ff5c1a, #ffa226);
             box-shadow: none;
+            outline: none;
         }
         .time-display {
             flex: 0 0 auto;
@@ -724,9 +721,12 @@
             width: 34px;
             height: 34px;
             background: transparent;
+            outline: none;
         }
-        .volume-control .ctrl-btn:hover {
+        .volume-control .ctrl-btn:hover, .volume-control .ctrl-btn:focus {
             background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            box-shadow: none;
         }
         .volume-slider {
             position: relative;
@@ -795,9 +795,11 @@
             height: 18px;
             fill: currentColor;
         }
-        .close-player:hover {
+        .close-player:hover, .close-player:focus {
             background: var(--primary);
             transform: rotate(90deg) scale(1.1);
+            outline: none;
+            box-shadow: none;
         }
         .nav-arrow {
             position: absolute;
@@ -818,9 +820,11 @@
             transition: all 0.2s ease;
             outline: none;
         }
-        .nav-arrow:hover {
+        .nav-arrow:hover, .nav-arrow:focus {
             background: rgba(255, 69, 0, 0.8);
             transform: translateY(-50%) scale(1.1);
+            outline: none;
+            box-shadow: none;
         }
         .nav-arrow.left { left: 20px; }
         .nav-arrow.right { right: 20px; }
@@ -999,6 +1003,7 @@
         .show-all-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 69, 0, 0.4);
+            outline: none;
         }
         .all-moments {
             display: none;
@@ -1038,6 +1043,7 @@
         }
         .category-btn:hover {
             background: rgba(255, 255, 255, 0.2);
+            outline: none;
         }
         .moments-grid {
             display: grid;
@@ -1153,6 +1159,7 @@
         .back-to-random:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(255, 69, 0, 0.4);
+            outline: none;
         }
         .loading-placeholder {
             position: absolute;
@@ -1266,6 +1273,7 @@
         }
         .footer-toggle-btn:hover {
             transform: scale(1.1);
+            outline: none;
         }
         .footer-toggle-btn svg {
             width: 14px;
@@ -1293,7 +1301,7 @@
             h1 { font-size: 2rem; }
             .year-number { font-size: 2.5rem; }
             .player-frame { max-width: 94vw; }
-            .media-player-container { width: min(94vw, max(330px, calc(58vh * var(--media-ar, 1.7778)))); max-height: calc(100vh - 130px); }
+            .media-player-container { width: min(94vw, max(330px, calc((100vh - 150px) * var(--media-ar, 1.7778)))); max-height: calc(100vh - 150px); }
             .close-player { top: 15px; right: 15px; width: 34px; height: 34px; }
             .media-controls { padding: 10px 12px; gap: 10px; flex-wrap: wrap; }
             .progress-container { order: -1; flex: 0 0 100%; }
