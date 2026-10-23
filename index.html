@@ -639,6 +639,7 @@
             border-radius: 999px;
             background: rgba(255, 255, 255, 0.24);
             transition: height 0.18s ease;
+            pointer-events: none;
         }
         .progress-bar {
             position: absolute;
@@ -651,6 +652,7 @@
             background: linear-gradient(90deg, var(--primary), var(--secondary));
             box-shadow: 0 0 12px rgba(255, 110, 0, 0.45);
             transition: height 0.18s ease;
+            pointer-events: none;
         }
         .progress-container:hover .progress-buffer,
         .progress-container:hover .progress-bar,
@@ -1853,7 +1855,7 @@
         function syncPlayIcon() {
             const video = currentVideo;
             if (!video) return;
-            if (video.ended) setPlayIcon('replay');
+            if (video.ended && video.currentTime >= video.duration - 0.1) setPlayIcon('replay');
             else if (video.paused) setPlayIcon('play');
             else setPlayIcon('pause');
         }
@@ -1959,7 +1961,10 @@
                 syncPlayIcon();
             });
             video.addEventListener('progress', updateBufferBar);
-            video.addEventListener('seeked', updateProgressBar);
+            video.addEventListener('seeked', () => {
+                updateProgressBar();
+                syncPlayIcon();
+            });
             video.addEventListener('ended', () => {
                 mediaPlayerDiv.classList.add('video-ended');
                 showEndScreen();
@@ -2152,6 +2157,10 @@
             isDraggingProgress = true;
             progressContainer.classList.add('dragging');
             progressContainer.setPointerCapture(event.pointerId);
+            
+            hideEndScreen();
+            mediaPlayerDiv.classList.remove('video-ended');
+            
             seekFromPointer(event);
         });
         progressContainer.addEventListener('pointermove', (event) => {
